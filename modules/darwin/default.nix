@@ -14,6 +14,7 @@
   nix.extraOptions = ''
     experimental-features = nix-command flakes
   '';
+
   environment.systemPackages = [pkgs.coreutils];
   fonts.fontDir.enable = true;
   fonts.fonts = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
@@ -33,6 +34,8 @@
     caskArgs.no_quarantine = true;
     global.brewfile = true;
     masApps = {};
-    # casks = [ ];
+    casks = ["raycast"];
+    # taps = [];
+    # brews = [];
   };
 }

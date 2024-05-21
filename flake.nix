@@ -9,13 +9,14 @@
     darwin.inputs.nixpkgs.follows = "nixpkgs";
 
     # Nvim from zmre
-    pwnvim.url = "github:zmre/pwnvim";
+    # pwnvim.url = "github:zmre/pwnvim";
+    davim.url = "github:dh7892/davim";
   };
   outputs = inputs @ {
     nixpkgs,
     home-manager,
     darwin,
-    pwnvim,
+    davim,
     ...
   }: {
     darwinConfigurations.Davids-MacBook-Pro = darwin.lib.darwinSystem {
@@ -28,9 +29,10 @@
           home-manager = {
             backupFileExtension = "backup";
             useGlobalPkgs = true;
-            # Although people seem to recommend this option, it caused problems for me. Be wary of enabling it without having a way to get a clean shell as a backup!
+            # Although people seem to recommend this option, it caused problems for me.
+            # Be wary of enabling it without having a way to get a clean shell as a backup!
             # useUserPackages = true;
-            extraSpecialArgs = {inherit pwnvim;};
+            extraSpecialArgs = {inherit davim;};
             users.dhills.imports = [./modules/home-manager];
           };
         }

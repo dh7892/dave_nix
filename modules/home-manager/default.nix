@@ -1,11 +1,11 @@
 {
   pkgs,
-  pwnvim,
+  davim,
   ...
 }: {
   home = {
     stateVersion = "22.11";
-    packages = with pkgs; [ripgrep fd curl less pwnvim.packages."aarch64-darwin".default];
+    packages = with pkgs; [ripgrep fd curl less davim.packages."aarch64-darwin".default atuin];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
@@ -13,6 +13,12 @@
     file.".inputrc".source = ./dotfiles/inputrc;
   };
   programs = {
+    tmux = {
+      enable = true;
+      plugins = with pkgs; [
+        tmuxPlugins.better-mouse-mode
+      ];
+    };
     bat.enable = true;
     bat.config.theme = "TwoDark";
     fzf.enable = true;
@@ -28,6 +34,7 @@
         ls = "ls --color=auto -F";
         nixswitch = "darwin-rebuild switch --flake ~/code/dave_nix/.#";
         nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
+        vi = "nvim";
       };
     };
     starship.enable = true;
