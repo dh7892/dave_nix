@@ -1,11 +1,12 @@
 {
   pkgs,
   davim,
+  mySystem,
   ...
 }:
     let
       tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
-      myDavim = [davim.packages."aarch64-darwin".default];
+      myDavim = [davim.packages.${mySystem}.default];
       myPackages = with pkgs; [spotify ripgrep fd curl less atuin];
     in
     {

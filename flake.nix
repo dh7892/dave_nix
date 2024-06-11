@@ -18,11 +18,16 @@
     darwin,
     davim,
     ...
-  }: {
-    darwinConfigurations.Davids-MacBook-Pro = darwin.lib.darwinSystem {
-      system = "aarch64-darwin";
+  }: 
+  let
+    mySystem = "aarch64-darwin";
+    myMachine = "Davids-MacBook-Pro";
+  in
+  {
+    darwinConfigurations.${myMachine} = darwin.lib.darwinSystem {
+      system = mySystem;
       pkgs = import nixpkgs {
-        system = "aarch64-darwin";
+        system = mySystem;
         config.allowUnfree = true;
       };
       modules = [
@@ -35,7 +40,7 @@
             # Although people seem to recommend this option, it caused problems for me.
             # Be wary of enabling it without having a way to get a clean shell as a backup!
             # useUserPackages = true;
-            extraSpecialArgs = {inherit davim;};
+            extraSpecialArgs = {inherit davim mySystem;};
             users.dhills.imports = [./modules/home-manager];
           };
         }
