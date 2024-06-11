@@ -2,10 +2,15 @@
   pkgs,
   davim,
   ...
-}: {
+}:
+    let
+      tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
+    in
+    {
+  nixpkgs.config.allowUnfree = true;
   home = {
     stateVersion = "22.11";
-    packages = with pkgs; [ripgrep fd curl less davim.packages."aarch64-darwin".default atuin];
+    packages = with pkgs; [spotify ripgrep fd curl less davim.packages."aarch64-darwin".default atuin];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
@@ -18,6 +23,7 @@
       plugins = with pkgs; [
         tmuxPlugins.better-mouse-mode
       ];
+      extraConfig = tmuxConfig;
     };
     bat.enable = true;
     bat.config.theme = "TwoDark";
@@ -43,6 +49,7 @@
       enable = true;
       font.name = "MesloLGS Nerd Font Mono";
       font.size = 16;
+      keybindings = { };
     };
   };
 }
