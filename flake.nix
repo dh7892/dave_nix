@@ -8,8 +8,7 @@
     darwin.url = "github:LnL7/nix-darwin";
     darwin.inputs.nixpkgs.follows = "nixpkgs";
 
-    # Nvim from zmre
-    # pwnvim.url = "github:zmre/pwnvim";
+    # My vim setup
     davim.url = "github:dh7892/davim";
   };
   outputs = inputs @ {
