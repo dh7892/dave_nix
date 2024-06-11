@@ -5,12 +5,14 @@
 }:
     let
       tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
+      myDavim = [davim.packages."aarch64-darwin".default];
+      myPackages = with pkgs; [spotify ripgrep fd curl less atuin];
     in
     {
   nixpkgs.config.allowUnfree = true;
   home = {
     stateVersion = "22.11";
-    packages = with pkgs; [spotify ripgrep fd curl less davim.packages."aarch64-darwin".default atuin];
+      packages = myPackages ++ myDavim;
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
