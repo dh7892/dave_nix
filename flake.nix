@@ -35,7 +35,7 @@
         {
           home-manager = {
             backupFileExtension = "backup";
-            useGlobalPkgs = true;
+            useGlobalPkgs = false;
             # Although people seem to recommend this option, it caused problems for me.
             # Be wary of enabling it without having a way to get a clean shell as a backup!
             # useUserPackages = true;

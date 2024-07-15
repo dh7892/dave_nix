@@ -16,8 +16,7 @@
   '';
 
   environment.systemPackages = [pkgs.coreutils];
-  fonts.fontDir.enable = true;
-  fonts.fonts = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
+  fonts.packages = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
   services.nix-daemon.enable = true;
   system = {
     keyboard.enableKeyMapping = true;

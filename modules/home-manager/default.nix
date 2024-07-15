@@ -7,10 +7,24 @@
     let
       tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
       myDavim = [davim.packages.${mySystem}.default];
-      myPackages = with pkgs; [spotify ripgrep fd curl less atuin];
+      myPackages = with pkgs; [glow yazi spotify ripgrep fd curl less atuin];
+      weechat_overlay = final: prev:
+    {
+      weechat = prev.weechat.override {
+        configure = { availablePlugins, ... }: {
+          scripts = with prev.weechatScripts; [
+            weechat-otr
+            wee-slack
+          ];
+          # Darwin does not support php
+          plugins = builtins.attrValues (builtins.removeAttrs availablePlugins [ "php" ]);
+        };
+      };
+    };
     in
     {
   nixpkgs.config.allowUnfree = true;
+  nixpkgs.overlays = [weechat_overlay];
   home = {
     stateVersion = "22.11";
       packages = myPackages ++ myDavim;
@@ -45,6 +59,7 @@
         nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
         vi = "nvim";
       };
+      initExtra = builtins.readFile ./dotfiles/zshrc;
     };
     starship.enable = true;
     starship.enableZshIntegration = true;
