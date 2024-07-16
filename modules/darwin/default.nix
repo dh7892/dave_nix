@@ -1,7 +1,9 @@
-{pkgs, ...}: {
-  users.users.dhills = {
-    name = "dhills";
-    home = "/Users/dhills";
+{username, pkgs, ...}: 
+  {
+
+  users.users.${username} = {
+    name = username;
+    home = "/Users/${username}";
   };
   # Here go the darwin preferences and config items
   programs.zsh.enable = true;

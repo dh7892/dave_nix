@@ -39,7 +39,9 @@
       enable = true;
       plugins = with pkgs; [
         tmuxPlugins.better-mouse-mode
+        tmuxPlugins.power-theme
       ];
+      baseIndex = 1;
       extraConfig = tmuxConfig;
     };
     bat.enable = true;

@@ -21,6 +21,7 @@
   let
     mySystem = "aarch64-darwin";
     myMachine = "Davids-MacBook-Pro";
+    username = "dhills";
   in
   {
     darwinConfigurations.${myMachine} = darwin.lib.darwinSystem {
@@ -29,6 +30,7 @@
         system = mySystem;
         config.allowUnfree = true;
       };
+      specialArgs = { inherit username; };
       modules = [
         ./modules/darwin
         home-manager.darwinModules.home-manager
@@ -40,7 +42,7 @@
             # Be wary of enabling it without having a way to get a clean shell as a backup!
             # useUserPackages = true;
             extraSpecialArgs = {inherit davim mySystem;};
-            users.dhills.imports = [./modules/home-manager];
+            users.${username}.imports = [./modules/home-manager];
           };
         }
       ];
