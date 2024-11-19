@@ -9,7 +9,6 @@
   programs.zsh.enable = true;
   environment = {
     shells = [pkgs.bash pkgs.zsh];
-    loginShell = pkgs.zsh;
     systemPath = ["/opt/homebrew/bin"];
     pathsToLink = ["/Applications"];
   };
@@ -29,14 +28,20 @@
       NSGlobalDomain.AppleShowAllExtensions = true;
     };
     stateVersion = 4;
+    activationScripts.llmPlugin = {
+      text = ''
+        if ! llm plugin list | grep -q llm-gpt4all; then
+          llm install llm-gpt4all
+        fi
+      '';
+    };
   };
   homebrew = {
     enable = true;
     caskArgs.no_quarantine = true;
     global.brewfile = true;
     masApps = {};
-    casks = ["raycast"];
+    brews = ["llm"];
     # taps = [];
-    # brews = [];
   };
 }

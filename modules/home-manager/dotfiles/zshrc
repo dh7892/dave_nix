@@ -33,3 +33,18 @@ function yy() {
 if [[ -z "$TMUX" && -z "$VSCODE_PID" ]]; then
   tmux attach-session -t default || tmux new-session -s default
 fi
+
+function llmdiff() {
+    if git diff --quiet $1; then
+        echo "No changes to commit. Aborting."
+    else
+        commit_msg=$(git diff $1 | llm -m orca-mini-3b-gguf2-q4_0 -s "$(cat ~/.config/prompts/git-commit-prompt.txt)")
+        echo "Commit message: $commit_msg"
+        read -p "Do you want to commit with this message? [y/N] " confirm
+        if [[ $confirm =~ ^[Yy]$ ]]; then
+            git commit -m "$commit_msg"
+        else
+            echo "Commit aborted."
+        fi
+    fi
+}

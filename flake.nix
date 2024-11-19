@@ -20,7 +20,7 @@
   }: 
   let
     mySystem = "aarch64-darwin";
-    myMachine = "Davids-MacBook-Pro";
+    myMachine = "K001-DavidH";
     username = "dhills";
   in
   {
