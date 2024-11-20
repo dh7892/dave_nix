@@ -13,7 +13,7 @@
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
       myDavim = [davim.packages.${mySystem}.default];
-      myPackages = with pkgs; [raycast cargo git glow yazi spotify ripgrep fd curl less atuin];
+      myPackages = with pkgs; [lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin];
     in
     {
   nixpkgs.config.allowUnfree = true;
