@@ -39,7 +39,10 @@
         tmuxPlugins.power-theme
       ];
       baseIndex = 1;
-      extraConfig = tmuxConfig;
+      extraConfig = ''
+        ${tmuxConfig}
+        set-option -g default-command "${pkgs.zsh}/bin/zsh"
+      '';
     };
     bat.enable = true;
     bat.config.theme = "TwoDark";
