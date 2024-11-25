@@ -2,9 +2,40 @@
   pkgs,
   davim,
   mySystem,
+  lib,
   ...
 }:
     let
+      op-pkg = pkgs.stdenv.mkDerivation rec {
+        pname = "1password-cli";
+        version = "2.30.3";  # Update this as needed
+        
+        src = pkgs.fetchurl {
+          url = "https://cache.agilebits.com/dist/1P/op2/pkg/v${version}/op_darwin_arm64_v${version}.zip";
+          sha256 = "sha256-BHITOgmgWWEZVDwO597ws8CGRjVEMlFqGNv+gx1TbIg=";
+        };
+
+        nativeBuildInputs = [ pkgs.unzip ];
+
+        unpackPhase = ''
+          unzip $src
+        '';
+
+        installPhase = ''
+          mkdir -p $out/bin
+          cp op $out/bin/
+          chmod +x $out/bin/op
+
+          # Add debug output during install
+          echo "Installing op to $out/bin/op"
+        '';
+
+        meta = with lib; {
+          description = "1Password CLI";
+          homepage = "https://1password.com/";
+          platforms = platforms.darwin;
+        };
+    };
       tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
       tpm = pkgs.fetchFromGitHub {
         owner = "tmux-plugins";
@@ -19,7 +50,7 @@
   nixpkgs.config.allowUnfree = true;
   home = {
     stateVersion = "22.11";
-      packages = myPackages ++ myDavim;
+      packages = myPackages ++ myDavim ++ [op-pkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
@@ -30,6 +61,14 @@
       source = "${tpm}";
       recursive = true;
     };
+    file.".secrets.template".source = ./dotfiles/secrets;
+    # file.".config/karabiner" = {
+    #   source = ./dotfiles/karabiner;
+    #   recursive = false;
+    #   onChange = ''
+    #     /bin/launchctl kickstart -k gui/`id -u`/org.pqrs.karabiner.karabiner_console_user_server
+    #   '';
+    # };
   };
   programs = {
     tmux = {

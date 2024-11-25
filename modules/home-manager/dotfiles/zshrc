@@ -48,3 +48,8 @@ function llmdiff() {
         fi
     fi
 }
+
+# Source our API secrets if we have the
+if [ -e "${HOME}/.secrets.sh" ]; then source "${HOME}/.secrets.sh"; fi
+
+
