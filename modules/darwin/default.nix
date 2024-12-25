@@ -17,7 +17,7 @@
   '';
 
   environment.systemPackages = [pkgs.coreutils];
-  fonts.packages = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
+  # fonts.packages = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
   services.nix-daemon.enable = true;
   # services.karabiner-elements.enable = true;
   system = {

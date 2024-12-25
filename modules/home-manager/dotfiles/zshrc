@@ -18,6 +18,7 @@ alias ssostag="aws sso login --sso-session staging"
 eval "$(atuin init zsh)"
 
 export PATH=$PATH:/Users/dhills/go/bin/
+export PATH=$PATH:/Users/dhills/.cargo/bin/
 
 
 function yy() {
@@ -52,4 +53,6 @@ function llmdiff() {
 # Source our API secrets if we have the
 if [ -e "${HOME}/.secrets.sh" ]; then source "${HOME}/.secrets.sh"; fi
 
+
+alias lg=lazygit
 
