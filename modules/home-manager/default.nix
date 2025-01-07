@@ -44,7 +44,7 @@
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
       myDavim = [davim.packages.${mySystem}.default];
-      myPackages = with pkgs; [lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin];
+      myPackages = with pkgs; [lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rust-analyzer rustfmt clippy ];
     in
     {
   nixpkgs.config.allowUnfree = true;
@@ -71,6 +71,11 @@
     # };
   };
   programs = {
+    nushell = {
+      enable = true;
+      configFile.source = ./dotfiles/config.nu;
+      envFile.source = ./dotfiles/env.nu;
+    };
     tmux = {
       enable = true;
       plugins = with pkgs; [
@@ -106,15 +111,41 @@
     };
     starship.enable = true;
     starship.enableZshIntegration = true;
-    kitty = {
+
+    # kitty = {
+    #   enable = true;
+    #   font.name = "MesloLGS Nerd Font Mono";
+    #   font.size = 16;
+    #   keybindings = { };
+    #   settings = {
+    #     shell = "${pkgs.zsh}/bin/zsh";
+    #   };
+    # };
+
+    wezterm = {
       enable = true;
-      font.name = "MesloLGS Nerd Font Mono";
-      font.size = 16;
-      keybindings = { };
-      settings = {
-        shell = "${pkgs.zsh}/bin/zsh";
-      };
-      
-    };
+      extraConfig = ''
+    local wezterm = require 'wezterm'
+    local config = {}
+    
+    if wezterm.config_builder then
+      config = wezterm.config_builder()
+    end
+
+    -- macOS specific settings
+    config.font = wezterm.font('MesloLGS Nerd Font Mono')
+    config.font_size = 13.0
+    config.native_macos_fullscreen_mode = true
+    config.window_decorations = "TITLE | RESIZE"
+    
+    -- Try switching between these if you have graphics issues
+    config.front_end = "WebGpu"  -- or try "OpenGL"
+    
+    -- Disable ligatures if they're causing display issues
+    config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
+
+    return config
+  '';
+};
   };
 }
