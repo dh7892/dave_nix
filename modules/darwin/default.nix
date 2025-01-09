@@ -7,9 +7,8 @@
   };
   # Here go the darwin preferences and config items
   programs.zsh.enable = true;
-  programs.nushell.enable = true;
   environment = {
-    shells = [pkgs.bash pkgs.zsh pkgs.nushell];
+    shells = [pkgs.bash pkgs.zsh ];
     systemPath = ["/opt/homebrew/bin"];
     pathsToLink = ["/Applications"];
   };

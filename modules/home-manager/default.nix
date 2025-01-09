@@ -143,6 +143,10 @@
     
     -- Disable ligatures if they're causing display issues
     config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
+    config.keys = {
+        { key = "L", mods = "CMD|SHIFT", action = wezterm.action.ShowDebugOverlay },
+        { key = "3", mods = "OPT", action = wezterm.action.SendString("#") }
+    }
 
     return config
   '';
