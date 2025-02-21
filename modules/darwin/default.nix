@@ -8,18 +8,24 @@
   # Here go the darwin preferences and config items
   programs.zsh.enable = true;
   environment = {
+    systemPackages = with pkgs; [
+      coreutils
+      karabiner-elements
+    ];
     shells = [pkgs.bash pkgs.zsh ];
     systemPath = ["/opt/homebrew/bin"];
     pathsToLink = ["/Applications"];
   };
+
+
+
   nix.extraOptions = ''
     experimental-features = nix-command flakes
   '';
 
-  environment.systemPackages = [pkgs.coreutils];
   # fonts.packages = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
   services.nix-daemon.enable = true;
-  # services.karabiner-elements.enable = true;
+  services.karabiner-elements.enable = true;
   system = {
     keyboard.enableKeyMapping = true;
     defaults = {

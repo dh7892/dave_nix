@@ -1,12 +1,16 @@
 {
   description = "Config for Dave";
   inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable"; # nixos-22.11
-    home-manager.url = "github:nix-community/home-manager/master";
-    home-manager.inputs.nixpkgs.follows = "nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
+    home-manager = {
+      url = "github:nix-community/home-manager/release-24.11";  # Changed from master to release-24.11
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
-    darwin.url = "github:LnL7/nix-darwin";
-    darwin.inputs.nixpkgs.follows = "nixpkgs";
+    darwin = {
+      url = "github:LnL7/nix-darwin/nix-darwin-24.11";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     # My vim setup
     davim.url = "github:dh7892/davim";
@@ -29,6 +33,24 @@
       pkgs = import nixpkgs {
         system = mySystem;
         config.allowUnfree = true;
+        overlays = [
+          # Add the karabiner overlay here
+          (self: super: {
+            karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
+              version = "14.13.0";
+              src = super.fetchurl {
+                inherit (old.src) url;
+                hash = "sha256-gmJwoht/Tfm5qMecmq1N6PSAIfWOqsvuHU8VDJY8bLw=";
+              };
+              postInstall = ''
+              # Ensure driver components match the main version
+              mkdir -p $out/Library/Application\ Support/org.pqrs
+              cp -r ./src/scripts/uninstaller.applescript $out/scripts/
+              cp -r ./src/scripts/relaunch.applescript $out/scripts/
+            '';
+            });
+          })
+        ];
       };
       specialArgs = { inherit username; };
       modules = [

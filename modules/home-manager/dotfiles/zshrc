@@ -4,7 +4,7 @@ set -o vi
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
-eval "$(pyenv virtualenv-init -)"
+# eval "$(pyenv virtualenv-init -)"
 
 
 alias ssoprod="aws sso login --sso-session production"
@@ -18,7 +18,6 @@ alias ssostag="aws sso login --sso-session staging"
 eval "$(atuin init zsh)"
 
 export PATH=$PATH:/Users/dhills/go/bin/
-export PATH=$PATH:/Users/dhills/.cargo/bin/
 
 
 function yy() {

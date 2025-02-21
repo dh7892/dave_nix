@@ -1,0 +1,64 @@
+{
+    "global": {
+        "check_for_updates_on_startup": true,
+        "show_in_menu_bar": true,
+        "show_profile_name_in_menu_bar": false
+    },
+    "profiles": [
+        {
+            "name": "Default profile",
+            "complex_modifications": {
+                "rules": [
+                    {
+                        "description": "Caps Lock to Ctrl+B",
+                        "manipulators": [
+                            {
+                                "type": "basic",
+                                "from": {
+                                    "key_code": "caps_lock",
+                                    "modifiers": {
+                                        "optional": ["any"]
+                                    }
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "b",
+                                        "modifiers": ["left_control"]
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Right command to output 'hello'",
+                        "manipulators": [
+                            {
+                                "type": "basic",
+                                "from": {
+                                    "key_code": "right_command"
+                                },
+                                "to": [
+                                    {
+                                        "key_code": "h"
+                                    },
+                                    {
+                                        "key_code": "e"
+                                    },
+                                    {
+                                        "key_code": "l"
+                                    },
+                                    {
+                                        "key_code": "l"
+                                    },
+                                    {
+                                        "key_code": "o"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    ]
+}

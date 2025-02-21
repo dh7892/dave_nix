@@ -43,14 +43,20 @@
         rev = "v3.1.0";
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
-      myDavim = [davim.packages.${mySystem}.default];
-      myPackages = with pkgs; [lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rust-analyzer rustfmt clippy ];
+      myDavim = davim.packages.${mySystem}.default;
+      myPackages = with pkgs; [lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rustc rust-analyzer rustfmt clippy ];
     in
     {
   nixpkgs.config.allowUnfree = true;
   home = {
+     file.".config/karabiner/karabiner.json" = {
+    source =  ./dotfiles/karabiner/karabiner.json;
+    onChange = ''
+      /bin/launchctl kickstart -k gui/`id -u`/org.pqrs.karabiner.karabiner_console_user_server
+    '';
+  };
     stateVersion = "22.11";
-      packages = myPackages ++ myDavim ++ [op-pkg];
+      packages = myPackages ++ [myDavim op-pkg ];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
@@ -62,13 +68,6 @@
       recursive = true;
     };
     file.".secrets.template".source = ./dotfiles/secrets;
-    # file.".config/karabiner" = {
-    #   source = ./dotfiles/karabiner;
-    #   recursive = false;
-    #   onChange = ''
-    #     /bin/launchctl kickstart -k gui/`id -u`/org.pqrs.karabiner.karabiner_console_user_server
-    #   '';
-    # };
   };
   programs = {
     nushell = {
@@ -112,44 +111,44 @@
     starship.enable = true;
     starship.enableZshIntegration = true;
 
-    # kitty = {
-    #   enable = true;
-    #   font.name = "MesloLGS Nerd Font Mono";
-    #   font.size = 16;
-    #   keybindings = { };
-    #   settings = {
-    #     shell = "${pkgs.zsh}/bin/zsh";
-    #   };
-    # };
-
-    wezterm = {
+    kitty = {
       enable = true;
-      extraConfig = ''
-    local wezterm = require 'wezterm'
-    local config = {}
-    
-    if wezterm.config_builder then
-      config = wezterm.config_builder()
-    end
+      font.name = "MesloLGS Nerd Font Mono";
+      font.size = 16;
+      keybindings = { };
+      settings = {
+        shell = "${pkgs.zsh}/bin/zsh";
+      };
+    };
 
-    -- macOS specific settings
-    config.font = wezterm.font('MesloLGS Nerd Font Mono')
-    config.font_size = 13.0
-    config.native_macos_fullscreen_mode = true
-    config.window_decorations = "TITLE | RESIZE"
+    # wezterm = {
+    #   enable = true;
+    #   extraConfig = ''
+    # local wezterm = require 'wezterm'
+    # local config = {}
     
-    -- Try switching between these if you have graphics issues
-    config.front_end = "WebGpu"  -- or try "OpenGL"
-    
-    -- Disable ligatures if they're causing display issues
-    config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
-    config.keys = {
-        { key = "L", mods = "CMD|SHIFT", action = wezterm.action.ShowDebugOverlay },
-        { key = "3", mods = "OPT", action = wezterm.action.SendString("#") }
-    }
+    # if wezterm.config_builder then
+    #   config = wezterm.config_builder()
+    # end
 
-    return config
-  '';
-};
+    # -- macOS specific settings
+    # config.font = wezterm.font('MesloLGS Nerd Font Mono')
+    # config.font_size = 13.0
+    # config.native_macos_fullscreen_mode = true
+    # config.window_decorations = "TITLE | RESIZE"
+    
+    # -- Try switching between these if you have graphics issues
+    # config.front_end = "WebGpu"  -- or try "OpenGL"
+    
+    # -- Disable ligatures if they're causing display issues
+    # config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
+    # config.keys = {
+    #     { key = "L", mods = "CMD|SHIFT", action = wezterm.action.ShowDebugOverlay },
+    #     { key = "3", mods = "OPT", action = wezterm.action.SendString("#") }
+    # }
+
+    # return config
+  # '';
+# };
   };
 }
