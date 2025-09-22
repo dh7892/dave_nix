@@ -44,7 +44,7 @@
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
       myDavim = davim.packages.${mySystem}.default;
-      myPackages = with pkgs; [lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rustc rust-analyzer rustfmt clippy ];
+      myPackages = with pkgs; [dbeaver-bin gimp inkscape imagemagick lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rustc rust-analyzer rustfmt clippy darwin.apple_sdk.frameworks.CoreFoundation libiconv];
     in
     {
   nixpkgs.config.allowUnfree = true;

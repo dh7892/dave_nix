@@ -55,3 +55,6 @@ if [ -e "${HOME}/.secrets.sh" ]; then source "${HOME}/.secrets.sh"; fi
 
 alias lg=lazygit
 
+export PATH=~/.npm-global/bin:$PATH
+
+alias claude="/Users/dhills/.claude/local/claude"
