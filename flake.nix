@@ -14,12 +14,16 @@
 
     # My vim setup
     davim.url = "github:dh7892/davim";
+    
+    # Claude Code with fast updates
+    claude-code.url = "github:sadjow/claude-code-nix";
   };
   outputs = inputs @ {
     nixpkgs,
     home-manager,
     darwin,
     davim,
+    claude-code,
     ...
   }: 
   let
@@ -63,7 +67,7 @@
             # Although people seem to recommend this option, it caused problems for me.
             # Be wary of enabling it without having a way to get a clean shell as a backup!
             # useUserPackages = true;
-            extraSpecialArgs = {inherit davim mySystem;};
+            extraSpecialArgs = {inherit davim claude-code mySystem;};
             users.${username}.imports = [./modules/home-manager];
           };
         }

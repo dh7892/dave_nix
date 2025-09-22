@@ -1,6 +1,7 @@
 {
   pkgs,
   davim,
+  claude-code,
   mySystem,
   lib,
   ...
@@ -44,7 +45,8 @@
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
       myDavim = davim.packages.${mySystem}.default;
-      myPackages = with pkgs; [dbeaver-bin gimp inkscape imagemagick lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rustc rust-analyzer rustfmt clippy darwin.apple_sdk.frameworks.CoreFoundation libiconv];
+      claudeCodePkg = claude-code.packages.${mySystem}.default;
+      myPackages = with pkgs; [dbeaver-bin gimp inkscape imagemagick lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rustc rust-analyzer rustfmt clippy darwin.apple_sdk.frameworks.CoreFoundation libiconv nushell];
     in
     {
   nixpkgs.config.allowUnfree = true;
@@ -56,7 +58,7 @@
     '';
   };
     stateVersion = "22.11";
-      packages = myPackages ++ [myDavim op-pkg ];
+      packages = myPackages ++ [myDavim op-pkg claudeCodePkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
