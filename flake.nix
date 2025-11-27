@@ -2,6 +2,7 @@
   description = "Config for Dave";
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     home-manager = {
       url = "github:nix-community/home-manager/release-24.11";  # Changed from master to release-24.11
       inputs.nixpkgs.follows = "nixpkgs";
@@ -20,16 +21,21 @@
   };
   outputs = inputs @ {
     nixpkgs,
+    nixpkgs-unstable,
     home-manager,
     darwin,
     davim,
     claude-code,
     ...
-  }: 
+  }:
   let
     mySystem = "aarch64-darwin";
     myMachine = "K001-DavidH";
     username = "dhills";
+    pkgs-unstable = import nixpkgs-unstable {
+      system = mySystem;
+      config.allowUnfree = true;
+    };
   in
   {
     darwinConfigurations.${myMachine} = darwin.lib.darwinSystem {
@@ -67,7 +73,7 @@
             # Although people seem to recommend this option, it caused problems for me.
             # Be wary of enabling it without having a way to get a clean shell as a backup!
             # useUserPackages = true;
-            extraSpecialArgs = {inherit davim claude-code mySystem;};
+            extraSpecialArgs = {inherit davim claude-code mySystem pkgs-unstable;};
             users.${username}.imports = [./modules/home-manager];
           };
         }

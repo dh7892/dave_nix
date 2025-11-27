@@ -1,5 +1,6 @@
 {
   pkgs,
+  pkgs-unstable,
   davim,
   claude-code,
   mySystem,
@@ -46,7 +47,18 @@
       };
       myDavim = davim.packages.${mySystem}.default;
       claudeCodePkg = claude-code.packages.${mySystem}.default;
-      myPackages = with pkgs; [dbeaver-bin gimp inkscape imagemagick lazygit raycast cargo git glow yazi spotify ripgrep fd curl less atuin lldb_18 rustc rust-analyzer rustfmt clippy darwin.apple_sdk.frameworks.CoreFoundation libiconv nushell];
+      myPackages = with pkgs; [
+        # General tools
+        dbeaver-bin gimp inkscape imagemagick lazygit raycast git glow yazi spotify
+        ripgrep fd curl less atuin lldb_18 bacon darwin.apple_sdk.frameworks.CoreFoundation
+        libiconv nushell
+        # Rust toolchain from unstable for latest versions
+        pkgs-unstable.cargo
+        pkgs-unstable.rustc
+        pkgs-unstable.rust-analyzer
+        pkgs-unstable.rustfmt
+        pkgs-unstable.clippy
+      ];
     in
     {
   nixpkgs.config.allowUnfree = true;
