@@ -1,33 +1,71 @@
-# README
+# dave_nix
 
-This is my nix config. It should allow me to re-create my preferred env in any machine.
+Personal macOS development environment for Apple Silicon, managed
+declaratively with Nix Flakes, nix-darwin, and home-manager.
 
-For now, it only supports Mac with Apply silicon
+## Bootstrap a New Machine
 
-## Setup
+### 1. Install Nix
 
-install the nix package manager
+Using the Determinate Systems installer (enables flakes by default):
 
-build this flake with `nix --extra-experimental-features "nix-command flakes" build .#darwinConfigurations.Davids-MacBook-Pro.system`
-
-If the host name is not `Davids-MacBook-Pro`, you need to edit the flake to change the machine name to match
-
-Once this has run successfully, you should have a results folder and can run:
-
-`./result/sw/bin/darwin-rebuild switch --flake <path-to-this-folder>`
-
-### 1 Password and secrets
-
-This flake will install the 1password cli tools. However, for it to work, you will need to have installed the main 1pwd app and enabled CLI interaction (in the app, settings->developer->Integrate with CLI
-
-In order to get secrets from 1pwd into our shell, we have a .secrets.template file (in home directory). You can run the following command to set up the secrets:
-
-```shell
-op inject --account <Account ID> "${HOME}/.secrets.template" -o "${HOME}/.secrets.sh"
+```bash
+curl --proto '=https' --tlsv1.2 -sSf -L \
+  https://install.determinate.systems/nix | sh -s -- install
 ```
 
-Or, if you can't get 1pwd's CLI working, you can just manually copy the template over and edit the secret keys.
+### 2. Install Homebrew
 
-If the secrets file is place, it will be sourced by the shell so it should work in any new shells.
+nix-darwin manages Homebrew packages declaratively but does not install
+Homebrew itself:
 
+```bash
+/bin/bash -c "$(curl -fsSL \
+  https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
 
+### 3. Build and Apply
+
+No need to clone the repo. Nix fetches it directly:
+
+```bash
+nix run nix-darwin/nix-darwin-24.11#darwin-rebuild -- switch \
+  --flake github:dh7892/dave_nix#default
+```
+
+This single command installs all packages, configures the shell, deploys
+dotfiles, sets macOS system preferences, and installs Homebrew casks.
+
+### 4. Post-Setup
+
+**Clone the repo** (for future config edits):
+
+```bash
+git clone git@github.com:dh7892/dave_nix.git ~/code/dave_nix
+```
+
+**1Password secrets**: Install the 1Password desktop app, enable CLI
+integration (Settings > Developer > "Integrate with CLI"), then:
+
+```bash
+op inject --account <Account-ID> \
+  "${HOME}/.secrets.template" -o "${HOME}/.secrets.sh"
+```
+
+If you can't use the 1Password CLI, copy `~/.secrets.template` to
+`~/.secrets.sh` and fill in values manually. The file is auto-sourced
+by zsh on startup.
+
+## Ongoing Use
+
+| Alias       | Description                                          |
+|-------------|------------------------------------------------------|
+| `nixswitch` | Apply config changes from `~/code/dave_nix`          |
+| `nixup`     | Update all flake inputs and rebuild                  |
+
+## Notes
+
+- **Platform**: Apple Silicon macOS only (`aarch64-darwin`)
+- **Neovim**: Managed via the [davim](https://github.com/dh7892/davim) flake
+- **Shells**: Zsh (primary, vi mode, auto-tmux) and Nushell
+- **Repo location**: Must be at `~/code/dave_nix` for shell aliases to work

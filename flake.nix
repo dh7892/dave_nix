@@ -30,7 +30,6 @@
   }:
   let
     mySystem = "aarch64-darwin";
-    myMachine = "K001-DavidH";
     username = "dhills";
     pkgs-unstable = import nixpkgs-unstable {
       system = mySystem;
@@ -38,7 +37,7 @@
     };
   in
   {
-    darwinConfigurations.${myMachine} = darwin.lib.darwinSystem {
+    darwinConfigurations.default = darwin.lib.darwinSystem {
       system = mySystem;
       pkgs = import nixpkgs {
         system = mySystem;
