@@ -29,8 +29,8 @@ function yy() {
 	rm -f -- "$tmp"
 }
 
-# Check if tmux is already running or if inside VS Code
-if [[ -z "$TMUX" && -z "$VSCODE_PID" ]]; then
+# Check if tmux is already running or if inside VS Code or cmux
+if [[ -z "$TMUX" && -z "$VSCODE_PID" && -z "$CMUX_WORKSPACE_ID" ]]; then
   tmux attach-session -t default || tmux new-session -s default
 fi
 

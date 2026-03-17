@@ -8,13 +8,13 @@
   ...
 }:
     let
-      op-pkg = pkgs.stdenv.mkDerivation rec {
-        pname = "1password-cli";
-        version = "2.30.3";  # Update this as needed
+      opencode-pkg = pkgs.stdenv.mkDerivation rec {
+        pname = "opencode";
+        version = "1.1.25";
         
         src = pkgs.fetchurl {
-          url = "https://cache.agilebits.com/dist/1P/op2/pkg/v${version}/op_darwin_arm64_v${version}.zip";
-          sha256 = "sha256-BHITOgmgWWEZVDwO597ws8CGRjVEMlFqGNv+gx1TbIg=";
+          url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-darwin-arm64.zip";
+          sha256 = "00adyjcri52n9y8xwlcx2mgzij420ayqr9aqk865iv0ynv9991j1";
         };
 
         nativeBuildInputs = [ pkgs.unzip ];
@@ -25,16 +25,13 @@
 
         installPhase = ''
           mkdir -p $out/bin
-          cp op $out/bin/
-          chmod +x $out/bin/op
-
-          # Add debug output during install
-          echo "Installing op to $out/bin/op"
+          cp opencode $out/bin/
+          chmod +x $out/bin/opencode
         '';
 
         meta = with lib; {
-          description = "1Password CLI";
-          homepage = "https://1password.com/";
+          description = "OpenCode AI coding agent";
+          homepage = "https://opencode.ai/";
           platforms = platforms.darwin;
         };
     };
@@ -52,6 +49,8 @@
         dbeaver-bin gimp inkscape imagemagick lazygit raycast git glow yazi spotify
         ripgrep fd curl less atuin lldb_18 bacon darwin.apple_sdk.frameworks.CoreFoundation
         libiconv nushell
+        # Python tooling
+        pkgs-unstable.pyenv
         # Rust toolchain from unstable for latest versions
         pkgs-unstable.cargo
         pkgs-unstable.rustc
@@ -63,14 +62,8 @@
     {
   nixpkgs.config.allowUnfree = true;
   home = {
-     file.".config/karabiner/karabiner.json" = {
-    source =  ./dotfiles/karabiner/karabiner.json;
-    onChange = ''
-      /bin/launchctl kickstart -k gui/`id -u`/org.pqrs.karabiner.karabiner_console_user_server
-    '';
-  };
     stateVersion = "22.11";
-      packages = myPackages ++ [myDavim op-pkg claudeCodePkg];
+      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
@@ -114,9 +107,10 @@
       syntaxHighlighting.enable = true;
       shellAliases = {
         ls = "ls --color=auto -F";
-        nixswitch = "darwin-rebuild switch --flake ~/code/dave_nix/.#";
+        nixswitch = "darwin-rebuild switch --flake ~/code/dave_nix#default";
         nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
         vi = "nvim";
+        opencode = "op run --account=my.1password.eu --env-file ~/.secrets.template --no-masking -- opencode";
       };
       initExtra = ''
         ${builtins.readFile ./dotfiles/zshrc}

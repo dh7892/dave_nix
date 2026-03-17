@@ -47,11 +47,11 @@
         "nixvim": "nixvim"
       },
       "locked": {
-        "lastModified": 1740151406,
-        "narHash": "sha256-pR3ys9Xc6D2czzp42m5mEldWoLq30Bx3ZsyTQG3WhvM=",
+        "lastModified": 1765265356,
+        "narHash": "sha256-IVOZL/6e28RBcucL8axJrQ8i4NhBmx9BhU/05gFyljc=",
         "owner": "dh7892",
         "repo": "davim",
-        "rev": "bf6109ad16746e3c767477a92dd58d3db5c7babc",
+        "rev": "84d152060b15d517262c6d442851108c8b3b9179",
         "type": "github"
       },
       "original": {

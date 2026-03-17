@@ -13,7 +13,6 @@
   environment = {
     systemPackages = with pkgs; [
       coreutils
-      karabiner-elements
       pam-reattach
     ];
     shells = [pkgs.bash pkgs.zsh ];
@@ -29,7 +28,7 @@
 
   # fonts.packages = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
   services.nix-daemon.enable = true;
-  services.karabiner-elements.enable = true;
+
   system = {
     keyboard.enableKeyMapping = true;
     defaults = {
@@ -66,6 +65,7 @@ auth       optional       ${pkgs.pam-reattach}/lib/pam/pam_reattach.so ignore_ss
     global.brewfile = true;
     masApps = {};
     brews = ["llm"];
-    # taps = [];
+    casks = ["1password-cli" "cmux"];
+    taps = ["manaflow-ai/cmux"];
   };
 }
