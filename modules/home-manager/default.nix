@@ -149,35 +149,5 @@
         shell = "${pkgs.zsh}/bin/zsh";
       };
     };
-
-    # wezterm = {
-    #   enable = true;
-    #   extraConfig = ''
-    # local wezterm = require 'wezterm'
-    # local config = {}
-    
-    # if wezterm.config_builder then
-    #   config = wezterm.config_builder()
-    # end
-
-    # -- macOS specific settings
-    # config.font = wezterm.font('MesloLGS Nerd Font Mono')
-    # config.font_size = 13.0
-    # config.native_macos_fullscreen_mode = true
-    # config.window_decorations = "TITLE | RESIZE"
-    
-    # -- Try switching between these if you have graphics issues
-    # config.front_end = "WebGpu"  -- or try "OpenGL"
-    
-    # -- Disable ligatures if they're causing display issues
-    # config.harfbuzz_features = { 'calt=0', 'clig=0', 'liga=0' }
-    # config.keys = {
-    #     { key = "L", mods = "CMD|SHIFT", action = wezterm.action.ShowDebugOverlay },
-    #     { key = "3", mods = "OPT", action = wezterm.action.SendString("#") }
-    # }
-
-    # return config
-  # '';
-# };
   };
 }
