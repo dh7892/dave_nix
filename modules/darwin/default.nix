@@ -31,7 +31,6 @@
   system = {
     keyboard.enableKeyMapping = true;
     defaults = {
-      finder.AppleShowAllExtensions = true;
       finder._FXShowPosixPathInTitle = true;
       dock.autohide = true;
       NSGlobalDomain.AppleShowAllExtensions = true;
