@@ -68,9 +68,33 @@
 
       myPackages = with pkgs; [
         # General tools
-        dbeaver-bin gimp inkscape imagemagick lazygit raycast git glow yazi spotify
-        ripgrep fd curl less atuin lldb_18 bacon darwin.apple_sdk.frameworks.CoreFoundation
-        libiconv nushell pkgs-unstable.rmapi typst poppler_utils librsvg rmc
+        atuin
+        bacon
+        curl
+        dbeaver-bin
+        fd
+        gimp
+        git
+        glow
+        imagemagick
+        inkscape
+        lazygit
+        less
+        libiconv
+        lldb_18
+        nushell
+        raycast
+        ripgrep
+        rmc
+        spotify
+        typst
+        yazi
+        # Frameworks
+        darwin.apple_sdk.frameworks.CoreFoundation
+        # Document tools
+        librsvg
+        poppler_utils
+        pkgs-unstable.rmapi
         # Python tooling
         pkgs-unstable.pyenv
         # Rust toolchain from unstable for latest versions
