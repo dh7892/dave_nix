@@ -91,7 +91,6 @@
       EDITOR = "nvim";
     };
     file.".config/prompts/git-commit-prompt.txt".source = ./dotfiles/git-commit-prompt.txt;
-    file.".inputrc".source = ./dotfiles/inputrc;
     file.".tmux/plugins/tpm" = {
       source = "${tpm}";
       recursive = true;
