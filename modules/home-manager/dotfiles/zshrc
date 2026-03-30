@@ -17,8 +17,6 @@ alias ssostag="aws sso login --sso-session staging"
 
 eval "$(atuin init zsh)"
 
-export PATH=$PATH:/Users/dhills/go/bin/
-
 
 function yy() {
 	local tmp="$(mktemp -t "yazi-cwd.XXXXXX")"
@@ -54,5 +52,3 @@ if [ -e "${HOME}/.secrets.sh" ]; then source "${HOME}/.secrets.sh"; fi
 
 
 alias lg=lazygit
-
-export PATH=$PATH:~/.npm-global/bin

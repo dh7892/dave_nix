@@ -114,6 +114,10 @@
       PAGER = "less";
       EDITOR = "nvim";
     };
+    sessionPath = [
+      "$HOME/go/bin"
+      "$HOME/.npm-global/bin"
+    ];
     file.".config/prompts/git-commit-prompt.txt".source = ./dotfiles/git-commit-prompt.txt;
     file.".tmux/plugins/tpm" = {
       source = "${tpm}";
