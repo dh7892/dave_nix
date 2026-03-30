@@ -3,15 +3,19 @@
   pkgs-unstable,
   davim,
   claude-code,
+  obsidible,
   mySystem,
   lib,
   ...
 }:
     let
+      # To update: bump version, then run:
+      #   nix-prefetch-url https://github.com/anomalyco/opencode/releases/download/v<NEW_VERSION>/opencode-darwin-arm64.zip
+      # and replace the sha256 with the output.
       opencode-pkg = pkgs.stdenv.mkDerivation rec {
         pname = "opencode";
         version = "1.1.25";
-        
+
         src = pkgs.fetchurl {
           url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-darwin-arm64.zip";
           sha256 = "00adyjcri52n9y8xwlcx2mgzij420ayqr9aqk865iv0ynv9991j1";
@@ -44,11 +48,29 @@
       };
       myDavim = davim.packages.${mySystem}.default;
       claudeCodePkg = claude-code.packages.${mySystem}.default;
+      obsidiblePkg = obsidible.packages.${mySystem}.default;
+
+      # rmc: convert reMarkable .rm files to SVG/PDF/markdown (not in nixpkgs)
+      # Note: rmc 0.3.0 pins rmscene >=0.6.0,<0.7.0 but works fine with 0.5.0
+      rmc = pkgs.python3Packages.buildPythonApplication {
+        pname = "rmc";
+        version = "0.3.0";
+        format = "pyproject";
+        src = pkgs.fetchPypi {
+          pname = "rmc";
+          version = "0.3.0";
+          hash = "sha256-V6/hTVZpQIW2o4KqK5O3uG6yHpPnILFqgpkKoNZRPcs=";
+        };
+        build-system = [ pkgs.python3Packages.poetry-core ];
+        dependencies = with pkgs.python3Packages; [ click rmscene ];
+        pythonRelaxDeps = [ "rmscene" ];
+      };
+
       myPackages = with pkgs; [
         # General tools
         dbeaver-bin gimp inkscape imagemagick lazygit raycast git glow yazi spotify
         ripgrep fd curl less atuin lldb_18 bacon darwin.apple_sdk.frameworks.CoreFoundation
-        libiconv nushell
+        libiconv nushell pkgs-unstable.rmapi typst poppler_utils librsvg rmc
         # Python tooling
         pkgs-unstable.pyenv
         # Rust toolchain from unstable for latest versions
@@ -63,7 +85,7 @@
   nixpkgs.config.allowUnfree = true;
   home = {
     stateVersion = "22.11";
-      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg];
+      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
