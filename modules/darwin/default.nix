@@ -27,7 +27,6 @@
   '';
 
   # fonts.packages = [(pkgs.nerdfonts.override {fonts = ["Meslo"];})];
-  services.nix-daemon.enable = true;
 
   system = {
     keyboard.enableKeyMapping = true;
