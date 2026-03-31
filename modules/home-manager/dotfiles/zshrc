@@ -4,16 +4,9 @@ set -o vi
 export PYENV_ROOT="$HOME/.pyenv"
 command -v pyenv >/dev/null || export PATH="$PYENV_ROOT/bin:$PATH"
 eval "$(pyenv init -)"
-# eval "$(pyenv virtualenv-init -)"
-
 
 alias ssoprod="aws sso login --sso-session production"
 alias ssostag="aws sso login --sso-session staging"
-
-# export DATABASE_URL="postgres://postgres:postgres@localhost:5432/postgres"
-# export DB_USER=postgres
-# export DB_PASS=postgres
-# export DB_HOST=localhost
 
 eval "$(atuin init zsh)"
 
@@ -31,21 +24,6 @@ function yy() {
 if [[ -z "$TMUX" && -z "$VSCODE_PID" && -z "$CMUX_WORKSPACE_ID" ]]; then
   tmux attach-session -t default || tmux new-session -s default
 fi
-
-function llmdiff() {
-    if git diff --quiet $1; then
-        echo "No changes to commit. Aborting."
-    else
-        commit_msg=$(git diff $1 | llm -m orca-mini-3b-gguf2-q4_0 -s "$(cat ~/.config/prompts/git-commit-prompt.txt)")
-        echo "Commit message: $commit_msg"
-        read -p "Do you want to commit with this message? [y/N] " confirm
-        if [[ $confirm =~ ^[Yy]$ ]]; then
-            git commit -m "$commit_msg"
-        else
-            echo "Commit aborted."
-        fi
-    fi
-}
 
 # Source our API secrets if we have the
 if [ -e "${HOME}/.secrets.sh" ]; then source "${HOME}/.secrets.sh"; fi

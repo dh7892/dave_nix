@@ -1,15 +1,15 @@
 {
   description = "Config for Dave";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-24.11-darwin";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-25.05-darwin";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
     home-manager = {
-      url = "github:nix-community/home-manager/release-24.11";  # Changed from master to release-24.11
+      url = "github:nix-community/home-manager/release-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
     darwin = {
-      url = "github:LnL7/nix-darwin/nix-darwin-24.11";
+      url = "github:LnL7/nix-darwin/nix-darwin-25.05";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -18,6 +18,15 @@
     
     # Claude Code with fast updates
     claude-code.url = "github:sadjow/claude-code-nix";
+
+    # Rust toolchain
+    fenix = {
+      url = "github:nix-community/fenix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    # Obsidible: convert/transport between Obsidian and reMarkable
+    obsidible.url = "github:dh7892/obsidible";
   };
   outputs = inputs @ {
     nixpkgs,
@@ -26,6 +35,8 @@
     darwin,
     davim,
     claude-code,
+    fenix,
+    obsidible,
     ...
   }:
   let
@@ -42,24 +53,6 @@
       pkgs = import nixpkgs {
         system = mySystem;
         config.allowUnfree = true;
-        overlays = [
-          # Add the karabiner overlay here
-          (self: super: {
-            karabiner-elements = super.karabiner-elements.overrideAttrs (old: {
-              version = "14.13.0";
-              src = super.fetchurl {
-                inherit (old.src) url;
-                hash = "sha256-gmJwoht/Tfm5qMecmq1N6PSAIfWOqsvuHU8VDJY8bLw=";
-              };
-              postInstall = ''
-              # Ensure driver components match the main version
-              mkdir -p $out/Library/Application\ Support/org.pqrs
-              cp -r ./src/scripts/uninstaller.applescript $out/scripts/
-              cp -r ./src/scripts/relaunch.applescript $out/scripts/
-            '';
-            });
-          })
-        ];
       };
       specialArgs = { inherit username; };
       modules = [
@@ -68,11 +61,8 @@
         {
           home-manager = {
             backupFileExtension = "backup";
-            useGlobalPkgs = false;
-            # Although people seem to recommend this option, it caused problems for me.
-            # Be wary of enabling it without having a way to get a clean shell as a backup!
-            # useUserPackages = true;
-            extraSpecialArgs = {inherit davim claude-code mySystem pkgs-unstable;};
+            useGlobalPkgs = true;
+            extraSpecialArgs = {inherit davim claude-code fenix obsidible mySystem pkgs-unstable;};
             users.${username}.imports = [./modules/home-manager];
           };
         }

@@ -3,6 +3,7 @@
   pkgs-unstable,
   davim,
   claude-code,
+  fenix,
   obsidible,
   mySystem,
   lib,
@@ -50,6 +51,15 @@
       claudeCodePkg = claude-code.packages.${mySystem}.default;
       obsidiblePkg = obsidible.packages.${mySystem}.default;
 
+      # Complete stable Rust toolchain via fenix
+      rustToolchain = fenix.packages.${mySystem}.stable.withComponents [
+        "cargo"
+        "clippy"
+        "rustc"
+        "rustfmt"
+        "rust-analyzer"
+      ];
+
       # rmc: convert reMarkable .rm files to SVG/PDF/markdown (not in nixpkgs)
       # Note: rmc 0.3.0 pins rmscene >=0.6.0,<0.7.0 but works fine with 0.5.0
       rmc = pkgs.python3Packages.buildPythonApplication {
@@ -89,26 +99,19 @@
         spotify
         typst
         yazi
-        # Frameworks
-        darwin.apple_sdk.frameworks.CoreFoundation
         # Document tools
         librsvg
         poppler_utils
         pkgs-unstable.rmapi
         # Python tooling
         pkgs-unstable.pyenv
-        # Rust toolchain from unstable for latest versions
-        pkgs-unstable.cargo
-        pkgs-unstable.rustc
-        pkgs-unstable.rust-analyzer
-        pkgs-unstable.rustfmt
-        pkgs-unstable.clippy
+        # Rust toolchain (stable, via fenix)
+        rustToolchain
       ];
     in
     {
-  nixpkgs.config.allowUnfree = true;
   home = {
-    stateVersion = "24.11";
+    stateVersion = "25.05";
       packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg];
     sessionVariables = {
       PAGER = "less";
@@ -118,7 +121,6 @@
       "$HOME/go/bin"
       "$HOME/.npm-global/bin"
     ];
-    file.".config/prompts/git-commit-prompt.txt".source = ./dotfiles/git-commit-prompt.txt;
     file.".tmux/plugins/tpm" = {
       source = "${tpm}";
       recursive = true;
@@ -156,12 +158,12 @@
       syntaxHighlighting.enable = true;
       shellAliases = {
         ls = "ls --color=auto -F";
-        nixswitch = "darwin-rebuild switch --flake ~/code/dave_nix#default";
+        nixswitch = "sudo darwin-rebuild switch --flake ~/code/dave_nix#default";
         nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
         vi = "nvim";
         opencode = "op run --account=my.1password.eu --env-file ~/.secrets.template --no-masking -- opencode";
       };
-      initExtra = ''
+      initContent = ''
         ${builtins.readFile ./dotfiles/zshrc}
       '';
     };
@@ -172,7 +174,6 @@
       enable = true;
       font.name = "MesloLGS Nerd Font Mono";
       font.size = 16;
-      keybindings = { };
       settings = {
         shell = "${pkgs.zsh}/bin/zsh";
       };
