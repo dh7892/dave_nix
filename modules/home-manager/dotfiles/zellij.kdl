@@ -7,15 +7,15 @@ mouse_mode true
 copy_on_select true
 scrollback_editor "nvim"
 pane_frames false
+session_serialization false
 
 // Theme
 theme "default"
 
 keybinds clear-defaults=true {
     // --- Normal mode (default) ---
-    // Ctrl-h/j/k/l pane navigation is handled by zellij-nav.nvim
-    // to enable vim-aware switching. These binds act as fallback
-    // for non-vim panes.
+    // All pane/tab navigation is behind the Ctrl-b leader to avoid
+    // conflicts with terminal apps like Neovim.
     normal {
         // Leader key — enters tmux mode
         bind "Ctrl b" { SwitchToMode "tmux"; }
@@ -100,18 +100,4 @@ keybinds clear-defaults=true {
         bind "Enter" { SwitchToMode "normal"; }
     }
 
-    // --- Shared across all modes except locked ---
-    shared_except "locked" {
-        // Ctrl-h/j/k/l for pane navigation (vim-aware via zellij-nav.nvim)
-        bind "Ctrl h" { MoveFocusOrTab "left"; }
-        bind "Ctrl j" { MoveFocus "down"; }
-        bind "Ctrl k" { MoveFocus "up"; }
-        bind "Ctrl l" { MoveFocusOrTab "right"; }
-    }
-}
-
-// Plugins
-plugins {
-    // zellij-nav.nvim handles the vim-aware Ctrl-h/j/k/l switching
-    // It requires the corresponding Neovim plugin to be installed
 }
