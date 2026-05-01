@@ -156,7 +156,10 @@
     file.".secrets.template".source = ./dotfiles/secrets;
     file.".local_shell_settings.template.sh".source = ./dotfiles/local_shell_settings.template.sh;
     file.".config/zellij/config.kdl".source = ./dotfiles/zellij.kdl;
-    file.".config/karabiner/karabiner.json".source = ./dotfiles/karabiner/karabiner.json;
+    file.".config/karabiner/karabiner.json" = {
+      source = ./dotfiles/karabiner/karabiner.json;
+      force = true;
+    };
     file.".aerospace.toml".source = ./dotfiles/aerospace.toml;
   };
   programs = {
