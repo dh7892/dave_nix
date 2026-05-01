@@ -50,7 +50,7 @@ This repository contains Dave's complete macOS development environment configura
 - **Vim Setup**: External Neovim configuration via davim flake
 - **AI-Assisted Git**: Commit message generation using LLM
 - **Secrets Management**: 1Password templates and CLI integration
-- **Keyboard Customization**: Karabiner Elements (Caps Lock → Ctrl+B)
+- **Window Management**: AeroSpace tiling window manager
 
 #### Shell Configuration Highlights
 - **Auto-Tmux**: Automatic tmux session attachment on shell startup
@@ -78,7 +78,7 @@ dave_nix/
             ├── zshrc                  # Zsh shell configuration
             ├── tmux.conf              # Tmux multiplexer config
             ├── config.nu              # Nushell configuration
-            ├── karabiner/karabiner.json # Keyboard mappings
+            ├── aerospace.toml           # AeroSpace window manager config
             ├── secrets                # 1Password template
             └── [other dotfiles]       # Additional configurations
 ```
