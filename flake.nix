@@ -27,9 +27,6 @@
 
     # Obsidible: convert/transport between Obsidian and reMarkable
     obsidible.url = "github:dh7892/obsidible";
-
-    # Pi agentic coding tool
-    coding-agents.url = "github:kissgyorgy/coding-agents";
   };
   outputs = inputs @ {
     nixpkgs,
@@ -40,7 +37,6 @@
     claude-code,
     fenix,
     obsidible,
-    coding-agents,
     ...
   }:
   let
@@ -66,7 +62,7 @@
           home-manager = {
             backupFileExtension = "backup";
             useGlobalPkgs = true;
-            extraSpecialArgs = {inherit davim claude-code fenix obsidible coding-agents mySystem pkgs-unstable;};
+            extraSpecialArgs = {inherit davim claude-code fenix obsidible mySystem pkgs-unstable;};
             users.${username}.imports = [./modules/home-manager];
           };
         }

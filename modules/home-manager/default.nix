@@ -5,7 +5,6 @@
   claude-code,
   fenix,
   obsidible,
-  coding-agents,
   mySystem,
   lib,
   ...
@@ -38,6 +37,34 @@
         meta = with lib; {
           description = "OpenCode AI coding agent";
           homepage = "https://opencode.ai/";
+          platforms = platforms.darwin;
+        };
+    };
+
+      # To update: bump version and sha256. Get new sha256 with:
+      #   nix-prefetch-url https://github.com/badlogic/pi-mono/releases/download/v<NEW_VERSION>/pi-darwin-arm64.tar.gz
+      pi-pkg = pkgs.stdenv.mkDerivation rec {
+        pname = "pi-coding-agent";
+        version = "0.71.0";
+
+        src = pkgs.fetchurl {
+          url = "https://github.com/badlogic/pi-mono/releases/download/v${version}/pi-darwin-arm64.tar.gz";
+          sha256 = "01q8ys7wfdswv8m59qbqrxb0k8ii319fgq328w32rjqf4n5wjprf";
+        };
+
+        unpackPhase = ''
+          tar -xzf $src
+        '';
+
+        installPhase = ''
+          mkdir -p $out/bin
+          cp pi/pi $out/bin/pi
+          chmod +x $out/bin/pi
+        '';
+
+        meta = with lib; {
+          description = "Pi — minimal terminal coding agent with TUI";
+          homepage = "https://github.com/badlogic/pi-mono";
           platforms = platforms.darwin;
         };
     };
@@ -113,7 +140,7 @@
     {
   home = {
     stateVersion = "25.05";
-      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg];
+      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg pi-pkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
