@@ -45,7 +45,7 @@
     caskArgs.no_quarantine = true;
     global.brewfile = true;
     brews = [];
-    casks = ["1password-cli" "cmux"];
+    casks = ["1password-cli" "cmux" "karabiner-elements"];
     taps = ["manaflow-ai/cmux"];
   };
 }

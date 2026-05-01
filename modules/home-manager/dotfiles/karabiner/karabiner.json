@@ -10,7 +10,7 @@
             "complex_modifications": {
                 "rules": [
                     {
-                        "description": "Caps Lock to Ctrl+B",
+                        "description": "Caps Lock: hold = Meh (Cmd+Ctrl+Alt), tap = Ctrl+B",
                         "manipulators": [
                             {
                                 "type": "basic",
@@ -22,36 +22,14 @@
                                 },
                                 "to": [
                                     {
+                                        "key_code": "left_control",
+                                        "modifiers": ["left_command", "left_option"]
+                                    }
+                                ],
+                                "to_if_alone": [
+                                    {
                                         "key_code": "b",
                                         "modifiers": ["left_control"]
-                                    }
-                                ]
-                            }
-                        ]
-                    },
-                    {
-                        "description": "Right command to output 'hello'",
-                        "manipulators": [
-                            {
-                                "type": "basic",
-                                "from": {
-                                    "key_code": "right_command"
-                                },
-                                "to": [
-                                    {
-                                        "key_code": "h"
-                                    },
-                                    {
-                                        "key_code": "e"
-                                    },
-                                    {
-                                        "key_code": "l"
-                                    },
-                                    {
-                                        "key_code": "l"
-                                    },
-                                    {
-                                        "key_code": "o"
                                     }
                                 ]
                             }

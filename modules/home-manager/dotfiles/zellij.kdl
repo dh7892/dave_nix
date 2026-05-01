@@ -1,0 +1,117 @@
+// Zellij config — tmux-compatible keybindings
+// Leader: Ctrl-b (same as tmux)
+
+// General settings
+default_mode "normal"
+mouse_mode true
+copy_on_select true
+scrollback_editor "nvim"
+pane_frames false
+
+// Theme
+theme "default"
+
+keybinds clear-defaults=true {
+    // --- Normal mode (default) ---
+    // Ctrl-h/j/k/l pane navigation is handled by zellij-nav.nvim
+    // to enable vim-aware switching. These binds act as fallback
+    // for non-vim panes.
+    normal {
+        // Leader key — enters tmux mode
+        bind "Ctrl b" { SwitchToMode "tmux"; }
+        // Lock mode (passthrough all keys to the running app)
+        bind "Ctrl g" { SwitchToMode "locked"; }
+    }
+
+    locked {
+        bind "Ctrl g" { SwitchToMode "normal"; }
+    }
+
+    tmux {
+        // --- Pane splits (same as tmux) ---
+        bind "%" { NewPane "right"; SwitchToMode "normal"; }
+        bind "\"" { NewPane "down"; SwitchToMode "normal"; }
+        // Full-width horizontal split (like tmux prefix + _)
+        bind "_" { NewPane "down"; SwitchToMode "normal"; }
+
+        // --- Pane navigation (hjkl in tmux mode) ---
+        bind "h" { MoveFocus "left"; SwitchToMode "normal"; }
+        bind "j" { MoveFocus "down"; SwitchToMode "normal"; }
+        bind "k" { MoveFocus "up"; SwitchToMode "normal"; }
+        bind "l" { MoveFocus "right"; SwitchToMode "normal"; }
+
+        // --- Pane management ---
+        bind "x" { CloseFocus; SwitchToMode "normal"; }
+        bind "z" { ToggleFocusFullscreen; SwitchToMode "normal"; }
+        bind "f" { TogglePaneFrames; SwitchToMode "normal"; }
+        bind "w" { ToggleFloatingPanes; SwitchToMode "normal"; }
+        bind "e" { TogglePaneEmbedOrFloating; SwitchToMode "normal"; }
+
+        // --- Tabs (same as tmux) ---
+        bind "c" { NewTab; SwitchToMode "normal"; }
+        bind "n" { GoToNextTab; SwitchToMode "normal"; }
+        bind "p" { GoToPreviousTab; SwitchToMode "normal"; }
+        bind "1" { GoToTab 1; SwitchToMode "normal"; }
+        bind "2" { GoToTab 2; SwitchToMode "normal"; }
+        bind "3" { GoToTab 3; SwitchToMode "normal"; }
+        bind "4" { GoToTab 4; SwitchToMode "normal"; }
+        bind "5" { GoToTab 5; SwitchToMode "normal"; }
+        bind "6" { GoToTab 6; SwitchToMode "normal"; }
+        bind "7" { GoToTab 7; SwitchToMode "normal"; }
+        bind "8" { GoToTab 8; SwitchToMode "normal"; }
+        bind "9" { GoToTab 9; SwitchToMode "normal"; }
+        bind "," { SwitchToMode "RenameTab"; TabNameInput 0; }
+
+        // --- Resize mode (Ctrl-b then r) ---
+        bind "r" { SwitchToMode "resize"; }
+
+        // --- Session management ---
+        bind "d" { Detach; }
+        bind "o" {
+            LaunchOrFocusPlugin "session-manager" {
+                floating true
+                move_to_focused_tab true
+            };
+            SwitchToMode "normal";
+        }
+
+        // --- Escape back to normal ---
+        bind "Esc" { SwitchToMode "normal"; }
+        bind "Ctrl b" { SwitchToMode "normal"; }
+    }
+
+    resize {
+        bind "h" { Resize "Increase left"; }
+        bind "j" { Resize "Increase down"; }
+        bind "k" { Resize "Increase up"; }
+        bind "l" { Resize "Increase right"; }
+        bind "H" { Resize "Decrease left"; }
+        bind "J" { Resize "Decrease down"; }
+        bind "K" { Resize "Decrease up"; }
+        bind "L" { Resize "Decrease right"; }
+        bind "=" { Resize "Increase"; }
+        bind "-" { Resize "Decrease"; }
+        bind "Esc" { SwitchToMode "normal"; }
+        bind "Ctrl b" { SwitchToMode "tmux"; }
+    }
+
+    renametab {
+        bind "Esc" { UndoRenameTab; SwitchToMode "normal"; }
+        bind "Enter" { SwitchToMode "normal"; }
+    }
+
+    // --- Shared across all modes except locked ---
+    shared_except "locked" {
+        // Ctrl-h/j/k/l for pane navigation (vim-aware via zellij-nav.nvim)
+        bind "Ctrl h" { MoveFocusOrTab "left"; }
+        bind "Ctrl j" { MoveFocus "down"; }
+        bind "Ctrl k" { MoveFocus "up"; }
+        bind "Ctrl l" { MoveFocusOrTab "right"; }
+    }
+}
+
+// Plugins
+plugins {
+    // zellij-nav.nvim handles the vim-aware Ctrl-h/j/k/l switching
+    // It requires the corresponding Neovim plugin to be installed
+}
