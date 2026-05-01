@@ -5,6 +5,7 @@
   claude-code,
   fenix,
   obsidible,
+  coding-agents,
   mySystem,
   lib,
   ...
@@ -78,8 +79,9 @@
 
       myPackages = with pkgs; [
         # General tools
-        atuin
+        aerospace
         bacon
+        zellij
         curl
         dbeaver-bin
         fd
@@ -103,8 +105,7 @@
         librsvg
         poppler_utils
         pkgs-unstable.rmapi
-        # Python tooling
-        pkgs-unstable.pyenv
+        # Python tooling (pyenv managed via programs.pyenv)
         # Rust toolchain (stable, via fenix)
         rustToolchain
       ];
@@ -126,8 +127,20 @@
       recursive = true;
     };
     file.".secrets.template".source = ./dotfiles/secrets;
+    file.".local_shell_settings.template.sh".source = ./dotfiles/local_shell_settings.template.sh;
+    file.".config/zellij/config.kdl".source = ./dotfiles/zellij.kdl;
+    file.".config/karabiner/karabiner.json".source = ./dotfiles/karabiner/karabiner.json;
+    file.".aerospace.toml".source = ./dotfiles/aerospace.toml;
   };
   programs = {
+    atuin = {
+      enable = true;
+      enableZshIntegration = true;
+    };
+    pyenv = {
+      enable = true;
+      enableZshIntegration = true;
+    };
     nushell = {
       enable = true;
       configFile.source = ./dotfiles/config.nu;
@@ -158,11 +171,28 @@
       syntaxHighlighting.enable = true;
       shellAliases = {
         ls = "ls --color=auto -F";
+        lg = "lazygit";
         nixswitch = "sudo darwin-rebuild switch --flake ~/code/dave_nix#default";
         nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
         vi = "nvim";
-        opencode = "op run --account=my.1password.eu --env-file ~/.secrets.template --no-masking -- opencode";
+        opencode = "op run --account=\${OP_ACCOUNT:-my.1password.eu} --env-file ~/.secrets.template --no-masking -- opencode";
+        shell-setup = "cp ~/.local_shell_settings.template.sh ~/local_shell_settings.sh && echo 'Created ~/local_shell_settings.sh -- edit it with your personal settings.'";
+        shell-setup-check = ''
+          echo "Checking local shell settings..."
+          local missing=0
+          if [ ! -e "$HOME/local_shell_settings.sh" ]; then
+            echo "  MISSING: ~/local_shell_settings.sh (run 'shell-setup' to create from template)"
+            missing=1
+          fi
+          if [ -z "''${OP_ACCOUNT:-}" ]; then
+            echo "  UNSET: OP_ACCOUNT (needed by opencode alias, defaults to my.1password.eu)"
+          fi
+          if [ "$missing" -eq 0 ]; then
+            echo "  All good!"
+          fi
+        '';
       };
+      defaultKeymap = "viins";
       initContent = ''
         ${builtins.readFile ./dotfiles/zshrc}
       '';
