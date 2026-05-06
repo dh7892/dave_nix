@@ -8,7 +8,7 @@ faster and to corral the growing pile of `nix*` helper aliases.
 
 ## TASK-001: `danix-add` — agentic "make a nix change" helper
 
-**Status:** PENDING
+**Status:** COMPLETE
 
 **Goal:** A one-shot helper that takes a free-form description of a
 desired change to this flake (e.g. "install ripgrep-all", "switch
