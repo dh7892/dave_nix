@@ -82,6 +82,12 @@ Hint will look like: `# update-source: pypi <pname>`.
      (or older nix: `nix hash to-sri --type sha256 <prefetch-output>`).
 - Replace the `hash = "sha256-...";` value.
 
+### `# update-source: skip`
+The hint explicitly opts the entry out of automatic updates. Used for blobs
+that upstream never re-publishes (e.g. frozen model files on Hugging Face).
+Don't touch the derivation. Mark it `skipped: pinned by hand` in the summary
+and move on.
+
 ### Anything else
 If you see a fetcher you don't recognise, or the `# update-source:` hint is
 missing/malformed, **don't guess**. Mark it `skipped: unknown fetcher` in the

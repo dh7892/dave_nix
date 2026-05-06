@@ -22,17 +22,35 @@ into Pi's editor. Local-only, English-only, no API keys.
   system-wide dictation (use macOS built-in or a paid GUI for
   that, separately).
 
-## Open decision (deferred until task is picked up)
+## Decisions taken at pickup
 
-**Hotkey.** Dave's call. Candidates to weigh:
+**Hotkey: `alt+space`, toggle behaviour.**
 
-- A function key (F13–F19 if mapped through aerospace).
-- A Hyper-key chord via aerospace.
-- A less-used Ctrl combo. Avoid `Ctrl+Space` (clashes with too
-  many TUIs).
+Reasoning:
+- `Cmd+T` (Dave's first instinct) isn't usable — Pi only knows
+  `ctrl/shift/alt` modifiers, and macOS terminals don't forward
+  Cmd to TUIs anyway.
+- `ctrl+t` is taken by `app.thinking.toggle`.
+- `alt+space` is unbound in Pi, easy to chord one-handed when
+  sitting back from the keyboard, and Kitty (Dave's terminal)
+  forwards Option as Meta cleanly.
 
-Pick this *first*, before writing code, and note it inline in
-this task file.
+**"Any other key to stop"** isn't achievable through
+`pi.registerShortcut` (it registers a specific chord, not a
+"next-keypress" listener). Instead, the same key toggles:
+tap `alt+space` to start recording, tap `alt+space` again to
+stop and transcribe. Dave OK'd this fallback.
+
+**Recording tool: `sox`** (using its `rec` front-end). 16 kHz mono
+16-bit PCM — whisper.cpp's native input format.
+
+**Model: `ggml-base.en.bin`** (~142 MB), fetched declaratively
+via `pkgs.fetchurl` and symlinked under
+`$HOME/.local/share/whisper-models/`. Marked
+`# update-source: skip` in the WRAPPED PACKAGES region because
+upstream blobs on Hugging Face don't get re-published; the
+`danix-update` prompt was extended with a recipe for the
+`skip` hint.
 
 ## Plan
 

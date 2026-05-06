@@ -122,6 +122,20 @@
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
 
+      # update-source: skip
+      # whisper.cpp speech-recognition model used by the voice-dictation
+      # Pi extension (see dotfiles/pi/extensions/voice.ts). The
+      # `base.en` English model (~142 MB) is the sweet spot for short
+      # push-to-talk utterances on Apple Silicon. Upstream essentially
+      # never re-publishes these blobs, so this is intentionally pinned
+      # forever; `danix-update` skips entries marked `update-source: skip`.
+      # If you want a different size (tiny.en / small.en / medium.en /
+      # large), edit the URL and refresh the hash by hand.
+      whisperModel = pkgs.fetchurl {
+        url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-base.en.bin";
+        hash = "sha256-oDd5yG3zMjB19eeWyyzlAp8A7Ihp7uP9+4l6/jbG0AI=";
+      };
+
       # update-source: pypi rmc
       # Note: rmc 0.3.0 pins rmscene >=0.6.0,<0.7.0 but works fine with 0.5.0;
       # if a future release relaxes this, the `pythonRelaxDeps` line may be
@@ -203,6 +217,11 @@
         # Python tooling (pyenv managed via programs.pyenv)
         # Rust toolchain (stable, via fenix)
         rustToolchain
+        # Voice dictation (TASK-011): whisper.cpp for local transcription
+        # and sox for microphone capture. Used by the Pi extension at
+        # dotfiles/pi/extensions/voice.ts.
+        whisper-cpp
+        sox
       ]);
     in
     {
@@ -225,6 +244,10 @@
       recursive = true;
     };
     file.".secrets.template".source = ./dotfiles/secrets;
+    # whisper.cpp model for voice dictation (TASK-011). Symlinked to a
+    # stable path under $HOME so the Pi extension can find it without
+    # hard-coding a /nix/store path.
+    file.".local/share/whisper-models/ggml-base.en.bin".source = whisperModel;
     # zellij.kdl is templated: `@HOME@` is replaced with the user's home dir
     # because zellij's `Run` action doesn't expand ~ or $HOME at runtime.
     file.".config/zellij/config.kdl".text =
