@@ -162,6 +162,7 @@
         nushell
         raycast
         ripgrep
+        ast-grep
         rmc
         spotify
         typst
