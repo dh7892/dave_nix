@@ -66,18 +66,29 @@ the directories exist and are writable-via-flake.
 
 ## Phase 1 — quick wins (small, high-value, low context cost)
 
-### 0. Subagents (promoted from Phase 3 by Dave's request)
-Bundled `subagent/` example. Subagents have their **own** context
-window, so the main session stays tiny — strongest possible fit for
-Pi's USP. Pattern: "go research X / refactor Y / scan the repo for Z"
-is delegated to a subagent that returns a summary, not its full
-working memory.
+### 0. Subagents — **PARKED**
 
-**Plan:** vendor `subagent/` from examples, configure which model it
-uses (probably a cheaper/faster model than the main one), and add a
-`promptGuidelines` bullet so the LLM knows when to delegate.
-Acceptance: a research-style prompt does not bloat the main context
-with dozens of `read`/`grep` results.
+Originally promoted to Phase 1 by Dave's request. After design
+discussion (see chat log preceding TASK-001) we concluded subagents
+don't currently solve a need that isn't already handled:
+
+- **Context-cleanliness for side-quests** is already well-served by
+  Pi's `/tree` branching workflow, which Dave reports working
+  smoothly. `/tree` additionally gives full visibility into the
+  side-quest's actions and the ability to cherry-pick turns back
+  into the main thread — both wins a subagent can't offer.
+- **Parallel execution of independent tasks** is better served by
+  `git worktree` + Zellij + multiple Pi sessions (see TASK-001
+  `pi-fanout`), because true parallelism wants real isolation,
+  observability, and per-pane cancellation.
+- **Cheaper-model offload** for grep/read/summarise work is the
+  one residual win subagents would offer. Not worth a whole
+  subagent abstraction on its own; if a concrete pattern emerges
+  it could be shipped as a single narrow `research` tool that
+  always runs on Haiku.
+
+**Revisit only** if a concrete recurring pain emerges that neither
+`/tree` nor `pi-fanout` solves.
 
 
 ### 1. Better question UI (your ask #1)
@@ -391,9 +402,12 @@ extracted into its own pi-package repo and consumed from Nix via
 
 ## Suggested order
 
-1. Phase 0 (skeleton).
-2. Phase 1 in one batch — including subagents (item 0), which Dave
-   has prioritised. All bundled, all zero-context.
+1. Phase 0 (skeleton). **Done.**
+2. TASK-001 `pi-fanout` — parallel-execution tooling (worktrees +
+   Zellij + multi-select TUI via `gum`). Replaces the parked
+   subagents item; lets us actually fan out the rest of Phase 1.
+3. Phase 1 in one batch — bundled, zero-context examples
+   (questionnaire, notify, guardrails, session QoL).
 3. Item 5 (web search via `brave-search` skill, free tier).
 4. Item 9 (code-knowledge tools: ripgrep + ast-grep + repo-map).
 5. Item 8 (rich diff viewer + `/explain-diff`).
@@ -415,7 +429,9 @@ extracted into its own pi-package repo and consumed from Nix via
   evaluate candidates.
 - Mobile/chat: **needs detailed exploration** — research task only,
   produces a design doc.
-- Subagents: **promoted** to Phase 1 item 0.
+- Subagents: **parked** (see Phase 1 item 0). Superseded by
+  `/tree` for context-cleanliness and `pi-fanout` (TASK-001)
+  for parallelism.
 - `oh-my-pi`: defer until after web search etc. is in; revisit at
   step 10 of the suggested order.
 

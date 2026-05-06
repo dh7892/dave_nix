@@ -141,6 +141,7 @@
         gimp
         git
         glow
+        gum
         httpie
         imagemagick
         inkscape
