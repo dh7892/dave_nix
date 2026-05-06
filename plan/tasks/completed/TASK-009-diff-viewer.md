@@ -1,9 +1,19 @@
 # TASK-009 — Rich diff viewer for proposed edits
 
-Status: pending
+Status: completed (scope reduced)
 Source: `plan/pi-addons-plan.md` Phase 2.5 item 8.
-Fanout-suitable: **yes**, but the `/explain-diff` sub-feature
-might want a quick design discussion before implementation.
+
+## Resolution
+
+After discussion: scoped down to just making `difftastic`
+available on the terminal. No git wiring, no Pi extension, no
+Meld GUI review, no `/explain-diff`. If/when those become
+actually wanted, spin them out as fresh tasks.
+
+What shipped: `difftastic` added to `home.packages` in
+`modules/home-manager/default.nix`. Binary is `difft`. Use
+manually as e.g. `difft a.rs b.rs`, or wire into git per-shell
+with `GIT_EXTERNAL_DIFF=difft git diff` if/when desired.
 
 ## Goal
 

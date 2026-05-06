@@ -147,6 +147,7 @@
         zellij
         curl
         dbeaver-bin
+        difftastic
         fd
         gimp
         git
