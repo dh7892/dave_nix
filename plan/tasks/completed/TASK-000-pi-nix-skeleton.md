@@ -1,7 +1,17 @@
 # TASK-000 — pi-nix-skeleton
 
-Status: **in progress**
+Status: **completed**
 Source: Phase 0 of `plan/pi-addons-plan.md`.
+
+## Outcome
+
+Shipped in commits `418e3fd` (skeleton + initial `danix-skill`
+helper) and `ffa8aba` (broadened to `danix-pi` covering skills,
+prompt templates, and general Pi config). Verified end-to-end:
+`danix-switch` activates cleanly, `~/.pi/agent/{extensions,skills,
+prompts}/` exist with `.gitkeep` symlinks, `settings.json` is a
+regular file with Pi-owned keys preserved, and `danix-pi` opens a
+floating zellij pane that drives the addon flow.
 
 ## Goal
 
