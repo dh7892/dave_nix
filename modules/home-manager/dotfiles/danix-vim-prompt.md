@@ -94,6 +94,34 @@ If the build fails:
 
 If it succeeds, `rm -f result` to keep the tree tidy, then proceed.
 
+## Step 4b: prefer ad-hoc `nix shell` for end-to-end testing
+
+A passing dry-run build only proves the config *evaluates*; it does
+not prove neovim actually starts and the plugin/keymap behaves.
+**Do not** suggest the user run `danix-switch` just to try the
+change — a full switch is slow, can prompt for sudo / 1Password,
+and is risky on a git worktree. Instead, point them at an isolated
+shell that runs the freshly-built davim:
+
+```
+nix run "$(cat ~/.config/dave_nix/repo-path)#davim"
+```
+
+or, equivalently:
+
+```
+nix shell "$(cat ~/.config/dave_nix/repo-path)#davim" -c nvim
+```
+
+If the change under test depends on env vars rendered by
+home-manager via 1Password (e.g. an LSP / AI plugin reading
+`OPENAI_API_KEY` / `ANTHROPIC_API_KEY`), wrap the invocation in
+`op run` so secrets get injected:
+
+```
+op run --env-file=<file> -- nix run "$(cat ~/.config/dave_nix/repo-path)#davim"
+```
+
 ## Step 5: commit
 
 On a successful build, from the `dave_nix` repo root:
@@ -109,7 +137,10 @@ On a successful build, from the `dave_nix` repo root:
 3. Print a final summary:
    - one-line description of what changed,
    - the commit hash (`git rev-parse --short HEAD`),
-   - the reminder: **"Run `danix-switch` to apply."**
+   - the `nix run …#davim` (or `op run -- nix run …#davim`)
+     one-liner the user can use to try it *now* without committing
+     to a full switch,
+   - the reminder: **"Run `danix-switch` once you're happy with it to make it permanent."**
 
 ## Hard rules
 

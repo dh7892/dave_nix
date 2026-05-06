@@ -95,6 +95,33 @@ If the build fails:
 If the build succeeds, delete the `./result` symlink (`rm -f result`)
 to keep the tree tidy, then proceed to step 5.
 
+## Step 4b: prefer ad-hoc `nix shell` for end-to-end testing
+
+A passing dry-run build only proves the system *evaluates*. It does
+not prove the new tool actually runs. **Do not** suggest the user
+run `danix-switch` just to try the change — a full switch is slow,
+can prompt for sudo / 1Password, and is risky on a git worktree or
+mid-iteration. Instead, when the change is something the user can
+actually exercise (a new CLI tool, a new wrapped package, a new
+shell command), tell them how to spin it up in an isolated shell:
+
+- nixpkgs package: `nix shell nixpkgs#<name>`
+- package from this flake: `nix shell "$(cat ~/.config/dave_nix/repo-path)#<name>"`
+- runnable app from this flake: `nix run "$(cat ~/.config/dave_nix/repo-path)#<app>" -- <args>`
+
+If the thing under test needs secrets that are normally rendered
+into the user's env by home-manager via 1Password (Pi, anything
+reading `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / similar), wrap the
+shell in `op run` so the secrets get injected:
+
+```
+op run --env-file=<file> -- nix shell "$(cat ~/.config/dave_nix/repo-path)#<name>" -c <cmd>
+```
+
+For changes that aren't directly runnable (a `programs.*` tweak, a
+shell alias, a dotfile edit), skip this step — just note it can
+only really be observed after `danix-switch`.
+
 ## Step 5: commit
 
 On a successful build:
@@ -107,7 +134,10 @@ On a successful build:
 3. Print a final summary:
    - one-line description of what changed,
    - the commit hash (`git rev-parse --short HEAD`),
-   - and the reminder: **"Run `danix-switch` to apply."**
+   - if applicable, the `nix shell` (or `op run -- nix shell …`)
+     one-liner the user can run *now* to try the change without
+     committing to a full switch,
+   - and the reminder: **"Run `danix-switch` once you're happy with it to make it permanent."**
 
 ## Hard rules
 

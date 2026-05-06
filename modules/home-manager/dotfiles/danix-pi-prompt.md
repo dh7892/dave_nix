@@ -253,6 +253,36 @@ If the build fails:
 
 If it succeeds, `rm -f result` to keep the tree tidy.
 
+### Try it in an ad-hoc shell (preferred over `danix-switch`)
+
+A passing dry-run build only proves the flake *evaluates*; it does
+not prove Pi actually loads the new skill / prompt / setting.
+**Do not** suggest the user run `danix-switch` just to try the
+change — a full switch is slow, can prompt for sudo / 1Password,
+and is risky on a git worktree.
+
+For Pi changes, point the user at an isolated shell that runs the
+freshly-configured Pi without touching their live env. Pi almost
+always needs API credentials, so this should be wrapped in
+`op run` so the 1Password-backed env vars (`ANTHROPIC_API_KEY`,
+`OPENAI_API_KEY`, etc.) get injected:
+
+```
+op run --env-file=<file> -- nix run "$(cat ~/.config/dave_nix/repo-path)#pi"
+```
+
+or, equivalently:
+
+```
+op run --env-file=<file> -- nix shell "$(cat ~/.config/dave_nix/repo-path)#pi" -c pi
+```
+
+For a change that is purely declarative `piSettings` (e.g. theme,
+`defaultModel`) and the user just wants the visible effect, the
+shell invocation is still the fastest way to confirm; for skills
+and prompt templates the user can immediately invoke
+`/skill:<name>` / `/<name>` inside that shell.
+
 ### Commit
 
 `git commit` with an imperative-mood message that describes the
@@ -267,11 +297,13 @@ Print a final summary:
 - one-line description of what changed,
 - path(s) touched,
 - the commit hash (`git rev-parse --short HEAD`),
-- the reminder: **"Run `danix-switch` to apply"** plus how to
-  invoke / observe the change inside Pi:
+- the `op run -- nix run …#pi` one-liner the user can run *now*
+  to try the change without committing to a full switch, plus how
+  to invoke / observe it inside that Pi:
   - skill → `/skill:<name>`
   - prompt template → `/<name>`
   - config → "the new setting takes effect on Pi's next start"
+- the reminder: **"Run `danix-switch` once you're happy with it to make it permanent."**
 
 If the change implies a follow-up the user must do themselves
 (e.g. add a secret to `~/.secrets.template`, set up a 1Password
