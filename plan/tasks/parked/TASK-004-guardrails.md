@@ -1,8 +1,54 @@
 # TASK-004 — Guardrails
 
-Status: pending
+Status: parked
 Source: `plan/pi-addons-plan.md` Phase 1 item 3.
 Fanout-suitable: **yes** (independent of other Phase 1 work).
+
+## Parked — 2026-05-06
+
+Parked during a fanout attempt because the bundled
+`confirm-destructive.ts` in pi-coding-agent 0.73.0 does **not** do what
+the scope here describes. It only confirms destructive *session*
+actions (`/clear`, session switch, fork) — it does not gate
+destructive bash commands like `rm -rf`, `sudo`, or destructive
+`git`. So the acceptance line
+
+> Running `bash` with `rm -rf foo` prompts for confirmation.
+
+can't be satisfied by configuring the bundled extension; it would
+require forking it and adding a `tool_call` hook on `bash`, which
+contradicts the task's own "Resist the urge to write our own
+guardrails" note.
+
+Open questions to resolve before unparking:
+
+1. Do we accept a minimal fork of `confirm-destructive.ts` that adds
+   a `tool_call` hook for `bash` with regex-based detection of
+   `rm -rf`, `sudo`, `git push --force`, `git reset --hard`, etc.?
+   Or do we drop the bash-command acceptance criterion and ship
+   only the session-level confirmations the bundled extension
+   provides?
+2. Should we instead look upstream — is there a different bundled
+   example (e.g. `bash-spawn-hook.ts`, `permission-gate.ts`) that
+   already covers destructive bash, and was the task description
+   conflating two extensions?
+
+The other three pieces (`protected-paths`, `dirty-repo-guard`,
+`git-checkpoint`) all looked tractable and could be split out into
+their own task if we want partial progress before the
+`confirm-destructive` question is resolved. Notes from the fanout
+attempt:
+
+- `dirty-repo-guard.ts` only hooks `session_before_switch` /
+  `session_before_fork`, so fanout workers (which start clean and
+  don't switch sessions) won't see false positives. No env-var
+  skip needed.
+- `git-checkpoint.ts` uses `git stash create` (no working-tree
+  mutation) and clears on `agent_end`, so it shouldn't conflict
+  with worker commit-at-end behaviour. Probably safe to ship
+  globally.
+- `protected-paths.ts` hardcodes its list; the task already
+  anticipates a minimal fork with a top-of-file comment.
 
 ## Goal
 
