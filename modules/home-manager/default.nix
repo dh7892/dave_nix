@@ -180,7 +180,6 @@
       recursive = true;
     };
     file.".secrets.template".source = ./dotfiles/secrets;
-    file.".local_shell_settings.template.sh".source = ./dotfiles/local_shell_settings.template.sh;
     # zellij.kdl is templated: `@HOME@` is replaced with the user's home dir
     # because zellij's `Run` action doesn't expand ~ or $HOME at runtime.
     file.".config/zellij/config.kdl".text =
@@ -284,18 +283,6 @@
         # Requires the 1Password desktop app installed and CLI integration enabled.
         opencode = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- opencode";
         pi = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- pi";
-        shell-setup = "cp ~/.local_shell_settings.template.sh ~/local_shell_settings.sh && echo 'Created ~/local_shell_settings.sh -- edit it with your personal settings.'";
-        shell-setup-check = ''
-          echo "Checking local shell settings..."
-          local missing=0
-          if [ ! -e "$HOME/local_shell_settings.sh" ]; then
-            echo "  MISSING: ~/local_shell_settings.sh (run 'shell-setup' to create from template)"
-            missing=1
-          fi
-          if [ "$missing" -eq 0 ]; then
-            echo "  All good!"
-          fi
-        '';
       };
       defaultKeymap = "viins";
       initContent = ''

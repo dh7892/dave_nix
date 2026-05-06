@@ -14,11 +14,12 @@ if [[ -z "$TMUX" && -z "$ZELLIJ" && -z "$VSCODE_PID" && -z "$CMUX_WORKSPACE_ID" 
   zellij attach default || zellij -s default
 fi
 
-# Source local settings (personal aliases, env vars, etc.)
+# Source local settings if present (personal aliases, env vars, etc.).
+# This file is intentionally not Nix-managed: it's a scratch space for
+# quick per-machine tweaks that don't warrant a rebuild. Anything
+# structured / long-lived should go in ~/.config/dave_nix/private.nix.
 if [ -e "${HOME}/local_shell_settings.sh" ]; then
   source "${HOME}/local_shell_settings.sh"
-else
-  echo "Note: ~/local_shell_settings.sh not found. Run 'shell-setup' to create it from the template."
 fi
 
 # Worker for the `nixupdate-wrapped` alias (see modules/home-manager/default.nix).
