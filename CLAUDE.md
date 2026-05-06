@@ -7,7 +7,7 @@ Dave's macOS dev environment: Nix Flakes + nix-darwin + home-manager, targeting 
 - `modules/darwin/default.nix` — system-level (nix-darwin) config
 - `modules/home-manager/default.nix` — user packages/programs
 - `modules/home-manager/dotfiles/` — dotfiles (zshrc, tmux.conf, config.nu, aerospace.toml, secrets, etc.)
-- External: Neovim config lives in the `davim` flake.
+- `davim/` — nixvim-based Neovim config, consumed as a `path:./davim` subflake. Edit nvim plugins/keymaps in here. Still usable standalone via `github:dh7892/dave_nix?dir=davim`.
 
 ## Rules for AI assistants
 - **Never run** `darwin-rebuild switch/build`, `nix flake update`, or the `danix-switch` / `danix-up` helpers automatically. They are slow and may prompt for credentials. After making config changes, ask the user to run `danix-switch` themselves.

@@ -14,7 +14,10 @@
     };
 
     # My vim setup
-    davim.url = "github:dh7892/davim";
+    # davim (neovim/nixvim config) lives in this same repo at ./davim and
+    # is consumed as a path subflake. It still works standalone — anyone
+    # else can use `github:dh7892/dave_nix?dir=davim`.
+    davim.url = "path:./davim";
     
     # Claude Code with fast updates
     claude-code.url = "github:sadjow/claude-code-nix";
