@@ -38,8 +38,8 @@ For each binding inside the region:
 
 ## Rules
 
-- **Do NOT run** `darwin-rebuild`, `nixswitch`, `nixup`, or `nix flake update`.
-  Editing the Nix files is the entire job. The user runs `nixswitch` themselves.
+- **Do NOT run** `darwin-rebuild`, `danix-switch`, `danix-up`, or `nix flake update`.
+  Editing the Nix files is the entire job. The user runs `danix-switch` themselves.
 - Edit `modules/home-manager/default.nix` directly, one derivation at a time.
 - If something fails (network, hash mismatch, unexpected file shape, parsing
   the `update-source` hint), report it in the final summary and continue —
@@ -96,4 +96,4 @@ tpm              | v3.1.0 → v3.1.0    | already-latest
 rmc              | 0.3.0  → 0.3.0     | already-latest
 ```
 
-Then stop. The user reviews the diff and runs `nixswitch` if happy.
+Then stop. The user reviews the diff and runs `danix-switch` if happy.

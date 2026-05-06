@@ -17,7 +17,7 @@
       #
       # Every derivation between the BEGIN and END markers is manually
       # pinned (version + hash) and therefore needs periodic updates.
-      # The `nixupdate-wrapped` alias launches an agent that reads this
+      # The `danix-update` helper launches an agent that reads this
       # region, detects the fetcher used by each `src = ...`, and bumps
       # `version`/`rev` plus the corresponding hash.
       #
@@ -257,28 +257,13 @@
       shellAliases = {
         ls = "ls --color=auto -F";
         lg = "lazygit";
-        nixswitch = ''
-          if [ ! -f "$HOME/.config/dave_nix/private.nix" ]; then
-            mkdir -p "$HOME/.config/dave_nix"
-            cp ${private.repoPath}/private.nix.example "$HOME/.config/dave_nix/private.nix"
-            echo "Created $HOME/.config/dave_nix/private.nix from template."
-            echo "Edit it with your details, then re-run nixswitch."
-          else
-            sudo darwin-rebuild switch --flake ${private.repoPath}#default --impure
-          fi
-        '';
-        nixup = "pushd ${private.repoPath}; nix flake update; nixswitch";
-        # Agentic update of manually-wrapped (non-flake) packages.
-        # Worker is the `_nixupdate_wrapped_run` function defined in dotfiles/zshrc.
-        # Edits files only — does NOT rebuild. If invoked inside zellij, opens a
-        # floating pane; otherwise runs inline.
-        nixupdate-wrapped = ''
-          if [ -n "''$ZELLIJ" ]; then
-            zellij run --floating --name nix-update -- zsh -ic _nixupdate_wrapped_run
-          else
-            _nixupdate_wrapped_run
-          fi
-        '';
+        # The real implementations of `danix-switch`, `danix-up`, `danix-update`,
+        # `danix-add`, and the `danix` launcher itself live as functions in
+        # dotfiles/zshrc. The shell aliases below are short-lived deprecation
+        # shims for the old `nix*` names; remove after a transition period.
+        nixswitch = "echo '(deprecated: use danix-switch)' >&2; danix-switch";
+        nixup = "echo '(deprecated: use danix-up)' >&2; danix-up";
+        nixupdate-wrapped = "echo '(deprecated: use danix-update)' >&2; danix-update";
         vi = "nvim";
         # API-key-bearing tools are wrapped with `op run` so the key is pulled
         # fresh from 1Password each invocation; nothing sensitive lands on disk.

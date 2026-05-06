@@ -43,7 +43,7 @@ mkdir -p ~/.config/dave_nix
 $EDITOR ~/.config/dave_nix/private.nix
 ```
 
-After the first build, the `nixswitch` alias will auto-copy the
+After the first build, the `danix-switch` helper will auto-copy the
 template into place if the file is ever missing.
 
 ### 4. Build and Apply
@@ -70,8 +70,8 @@ git clone git@github.com:dh7892/dave_nix.git ~/code/dave_nix
 ```
 
 If you clone somewhere else, update `repoPath` in
-`~/.config/dave_nix/private.nix` to match — the `nixswitch`, `nixup`,
-and `nixupdate-wrapped` aliases all read it from there.
+`~/.config/dave_nix/private.nix` to match — the `danix-*` helpers
+all read it from there.
 
 **1Password secrets**: Install the 1Password desktop app, enable CLI
 integration (Settings > Developer > "Integrate with CLI"), and sign in.
@@ -104,7 +104,7 @@ modules. The schema is documented in
 2. Reference it from the relevant Nix module via the `private` arg
    (e.g. `private.fullName`, `private.email`).
 3. Add the real value to your own `~/.config/dave_nix/private.nix`
-   on every machine before the next `nixswitch`.
+   on every machine before the next `danix-switch`.
 
 Never commit names, emails, usernames, hostnames, tokens, or similar
 to any tracked file in this repo. Runtime credentials (API keys, etc.)
@@ -115,12 +115,17 @@ the account shorthand comes from `private.opAccount`.
 
 ## Ongoing Use
 
-| Alias               | Description                                                              |
+| Command             | Description                                                              |
 |---------------------|--------------------------------------------------------------------------|
-| `nixswitch`         | Apply config changes from `private.repoPath`                             |
-| `nixup`             | Update all flake inputs and rebuild                                      |
-| `nixupdate-wrapped` | Agentic update of manually-pinned packages in the WRAPPED PACKAGES region |
-| `danix-add`         | Agentic helper to make a free-form change to the flake (validates + commits; you run `nixswitch`). Optional CLI arg: `danix-add "install ripgrep-all"` |
+| `danix`             | Launcher: `fzf` menu of the helpers below. `danix <sub>` runs `danix-<sub>` directly. |
+| `danix-switch`      | Apply config changes from `private.repoPath`                             |
+| `danix-up`          | Update all flake inputs and rebuild                                      |
+| `danix-update`      | Agentic update of manually-pinned packages in the WRAPPED PACKAGES region |
+| `danix-add`         | Agentic helper to make a free-form change to the flake (validates + commits; you run `danix-switch`). Optional CLI arg: `danix-add "install ripgrep-all"` |
+
+The old names `nixswitch`, `nixup`, and `nixupdate-wrapped` survive as
+deprecation shims that print a warning and call the new helpers. They
+will be removed shortly.
 
 ## Notes
 

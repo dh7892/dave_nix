@@ -44,8 +44,8 @@
 
     # Per-machine private config (PII / username). Lives outside the repo
     # at ~/.config/dave_nix/private.nix. See ./private.nix.example for the
-    # schema. Reading $HOME requires --impure (handled by the `nixswitch`
-    # alias and documented in the README bootstrap steps).
+    # schema. Reading $HOME requires --impure (handled by the `danix-switch`
+    # helper and documented in the README bootstrap steps).
     #
     # Prefer $SUDO_USER (so `sudo darwin-rebuild` finds the invoking user's
     # home rather than /var/root); fall back to $HOME for non-sudo runs.
@@ -72,7 +72,7 @@
           }
 
         A template lives at ./private.nix.example in this repo. The
-        `nixswitch` alias will auto-copy it for you on subsequent runs.
+        `danix-switch` helper will auto-copy it for you on subsequent runs.
         On first bootstrap, create the file by hand (or paste from
         1Password) before invoking darwin-rebuild.
       '';

@@ -20,7 +20,7 @@ tweaking a config, editing a module, etc. Either:
 This repo's `CLAUDE.md` has already been loaded into your context
 (Pi auto-discovers it). It is the single source of truth for the
 conventions here — PII via `private.nix`, the WRAPPED PACKAGES
-region, git-add-before-nixswitch, the no-`darwin-rebuild` rule, etc.
+region, git-add-before-danix-switch, the no-`darwin-rebuild` rule, etc.
 Apply those rules; do not re-`read` the file. You don't need to
 restate them back to the user.
 
@@ -37,7 +37,7 @@ restate them back to the user.
   them. If the change requires a new field, add it to
   `private.nix.example` with a placeholder, plumb it through, and tell
   the user to set the real value in their
-  `~/.config/dave_nix/private.nix` before the next `nixswitch`.
+  `~/.config/dave_nix/private.nix` before the next `danix-switch`.
 - New files must be `git add`ed (Nix only sees git-tracked files in a
   flake).
 
@@ -96,12 +96,12 @@ On a successful build:
 3. Print a final summary:
    - one-line description of what changed,
    - the commit hash (`git rev-parse --short HEAD`),
-   - and the reminder: **"Run `nixswitch` to apply."**
+   - and the reminder: **"Run `danix-switch` to apply."**
 
 ## Hard rules
 
-- **Do NOT run** `darwin-rebuild switch`, `nixswitch`, `nixup`, or
-  `nix flake update`. The user runs `nixswitch` themselves.
+- **Do NOT run** `darwin-rebuild switch`, `danix-switch`, `danix-up`, or
+  `nix flake update`. The user runs `danix-switch` themselves.
 - **Do NOT commit on a failed build.**
 - **Do NOT** touch files outside the scope of the requested change.
 - **Do NOT** introduce a new manually-wrapped package (see Step 3).

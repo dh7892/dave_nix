@@ -22,7 +22,69 @@ if [ -e "${HOME}/local_shell_settings.sh" ]; then
   source "${HOME}/local_shell_settings.sh"
 fi
 
-# Worker for the `nixupdate-wrapped` alias (see modules/home-manager/default.nix).
+# ---------------------------------------------------------------------------
+# danix-* helpers
+#
+# `danix-switch`, `danix-up`, `danix-update`, and `danix-add` are the
+# user-facing nix-management commands. The `danix` launcher (defined
+# at the bottom of this block) gives them a shared menu front-end.
+#
+# All of these are functions (rather than `shellAliases` entries) so
+# the launcher can dispatch by name without `eval`. Old names
+# (`nixswitch`, `nixup`, `nixupdate-wrapped`) survive as deprecation
+# shims in shellAliases for one transition cycle.
+# ---------------------------------------------------------------------------
+
+# Rebuild & activate the system. Bootstraps `private.nix` from the
+# template on first run if it's missing.
+danix-switch() {
+  local repo_path
+  repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
+  if [ ! -f "$HOME/.config/dave_nix/private.nix" ]; then
+    if [ -z "$repo_path" ]; then
+      echo "danix-switch: cannot bootstrap — ~/.config/dave_nix/repo-path is missing." >&2
+      echo "Set DAVE_NIX_REPO and copy private.nix.example manually, then retry." >&2
+      return 1
+    fi
+    mkdir -p "$HOME/.config/dave_nix"
+    cp "$repo_path/private.nix.example" "$HOME/.config/dave_nix/private.nix"
+    echo "Created $HOME/.config/dave_nix/private.nix from template."
+    echo "Edit it with your details, then re-run danix-switch."
+    return 0
+  fi
+  if [ -z "$repo_path" ]; then
+    echo "danix-switch: ~/.config/dave_nix/repo-path is missing." >&2
+    return 1
+  fi
+  sudo darwin-rebuild switch --flake "${repo_path}#default" --impure
+}
+
+# nix flake update + danix-switch.
+danix-up() {
+  local repo_path
+  repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
+  if [ -z "$repo_path" ]; then
+    echo "danix-up: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
+    return 1
+  fi
+  pushd "$repo_path" >/dev/null || return 1
+  nix flake update
+  popd >/dev/null
+  danix-switch
+}
+
+# Agentic update of manually-wrapped (non-flake) packages. Edits files
+# only — does NOT rebuild. If invoked inside zellij, opens a floating
+# pane; otherwise runs inline.
+danix-update() {
+  if [ -n "$ZELLIJ" ]; then
+    zellij run --floating --name nix-update -- zsh -ic _nixupdate_wrapped_run
+  else
+    _nixupdate_wrapped_run
+  fi
+}
+
+# Worker for `danix-update` (kept under its old name to keep the diff small).
 # Kept as a function so it's available in non-interactive subshells too
 # (e.g. when zellij spawns a pane via `zsh -ic ...`).
 #
@@ -41,7 +103,7 @@ _nixupdate_wrapped_run() {
 # Worker for the `danix-add` function (defined just below).
 #
 # Drives a Pi session through making + dry-run-building + committing a
-# user-described change to this flake. The user runs `nixswitch` themselves.
+# user-described change to this flake. The user runs `danix-switch` themselves.
 #
 # Usage:
 #   _danix_add_run                        # prompts for a request, then runs Pi
@@ -54,7 +116,7 @@ _danix_add_run() {
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
   if [ -z "$repo_path" ]; then
-    echo "danix-add: ~/.config/dave_nix/repo-path is missing — run nixswitch once first." >&2
+    echo "danix-add: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
     return 1
   fi
   cd "$repo_path" || return 1
@@ -100,4 +162,43 @@ danix-add() {
   else
     _danix_add_run "$@"
   fi
+}
+
+# ---------------------------------------------------------------------------
+# `danix` launcher
+#
+# `danix`           → fzf menu of helpers.
+# `danix <sub>`     → runs `danix-<sub>` directly (composes with history).
+#
+# Single source of truth: add a new helper by adding one line here.
+# ---------------------------------------------------------------------------
+typeset -gA _DANIX_COMMANDS=(
+  add     "Agentically make a change to this flake"
+  switch  "Rebuild & activate the system (sudo)"
+  up      "nix flake update + switch"
+  update  "Agentically update manually-wrapped packages"
+)
+
+danix() {
+  if (( $# > 0 )); then
+    local sub="$1"; shift
+    if [[ -z "${_DANIX_COMMANDS[$sub]+x}" ]]; then
+      echo "danix: unknown subcommand '$sub'" >&2
+      echo "available: ${(ko)_DANIX_COMMANDS}" >&2
+      return 2
+    fi
+    "danix-$sub" "$@"
+    return
+  fi
+
+  local choice
+  choice=$(
+    for k in ${(ko)_DANIX_COMMANDS}; do
+      printf '%s\t%s\n' "$k" "${_DANIX_COMMANDS[$k]}"
+    done | fzf --with-nth=1,2 --delimiter=$'\t' \
+               --prompt='danix> ' --height=40% --reverse \
+               --header='Pick a danix-* helper'
+  ) || return 130
+  local sub="${choice%%$'\t'*}"
+  [[ -n $sub ]] && "danix-$sub"
 }
