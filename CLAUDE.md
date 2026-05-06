@@ -42,9 +42,9 @@ nixpkgs ships) and is wrapped by hand with a pinned `version` + hash.
   for the updater. Flake inputs (davim, claude-code, fenix, obsidible,
   nixpkgs, …) update via `nix flake update` and don't belong in the region.
 
-## Agentic helpers (`danix-add`, `danix-vim`, `danix-ask`)
+## Agentic helpers (`danix-add`, `danix-vim`, `danix-ask`, `danix-skill`)
 
-Three Pi-driven helpers, each with its own system prompt under
+Four Pi-driven helpers, each with its own system prompt under
 `dotfiles/`:
 
 - **`danix-add`** (`dotfiles/danix-add-prompt.md`) — makes a
@@ -60,6 +60,13 @@ Three Pi-driven helpers, each with its own system prompt under
 - **`danix-ask`** (`dotfiles/danix-ask-prompt.md`) — **read-only**
   Q&A about the setup (what's installed, what keybindings exist,
   where something is configured). Does not edit, does not commit.
+- **`danix-skill`** (`dotfiles/danix-skill-prompt.md`) — designs and
+  adds a new Pi *skill* under
+  `modules/home-manager/dotfiles/pi/skills/<name>/`. Walks the user
+  through name + one-line description + body, writes `SKILL.md` plus
+  any helper scripts, dry-run-builds, commits. The user runs
+  `danix-switch`. Adding Pi *extensions* (TS files) and pi-packages
+  is explicitly out of scope for this helper.
 
 If you (a future agent or human) add a new convention to this file
 or introduce a new "shape" of change one of these helpers should know

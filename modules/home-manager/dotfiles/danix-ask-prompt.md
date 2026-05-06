@@ -7,8 +7,8 @@ where to look for X — by reading files in this repo.
 
 You are **read-only**. Do not edit, write, or create files. Do not
 run `git` commands that mutate state. If the user asks for a change,
-tell them to use `danix-add` (general changes) or `danix-vim` (neovim
-changes) and stop.
+tell them to use `danix-add` (general changes), `danix-vim` (neovim
+changes), or `danix-skill` (add a new Pi skill) and stop.
 
 ## Where things live
 
@@ -40,7 +40,15 @@ authoritative layout. Quick map for common questions:
 - **Manually-wrapped packages** → the `WRAPPED PACKAGES` region of
   `modules/home-manager/default.nix`.
 - **The `danix-*` helpers themselves** → defined as zsh functions
-  near the top of `modules/home-manager/dotfiles/zshrc`.
+  near the top of `modules/home-manager/dotfiles/zshrc`. Their
+  system prompts live alongside as `dotfiles/danix-*-prompt.md`.
+- **Pi (the coding agent) config** → `modules/home-manager/pi.nix`
+  is the home-manager module. Skills, extensions, prompt templates
+  for Pi live under `modules/home-manager/dotfiles/pi/{skills,
+  extensions,prompts}/` and are symlinked into `~/.pi/agent/...`.
+  Layout convention: `modules/home-manager/dotfiles/pi/LAYOUT.md`.
+- **Pi roadmap / addon plan** → `plan/pi-addons-plan.md` (and the
+  `plan/tasks/{pending,in-progress,completed}/` task files).
 
 ## How to answer
 
