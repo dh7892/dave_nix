@@ -43,14 +43,14 @@ _nixupdate_wrapped_run() {
 # Drives a Pi session through making + dry-run-building + committing a
 # user-described change to this flake. The user runs `nixswitch` themselves.
 #
-# Usage (set by the alias):
-#   _danix_add_run                    # interactive: Pi asks what to change
-#   _danix_add_run "install ripgrep-all"  # passes request as Pi's first message
+# Usage:
+#   _danix_add_run                        # prompts for a request, then runs Pi
+#   _danix_add_run "install ripgrep-all"  # uses arg as Pi's first message
 #
 # Refuses to start if the working tree is dirty, to keep the agent's commit
 # focused on its own diff.
 _danix_add_run() {
-  local op_account repo_path
+  local op_account repo_path request
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
   if [ -z "$repo_path" ]; then
@@ -64,13 +64,24 @@ _danix_add_run() {
     git -c color.status=always status --short >&2
     return 1
   fi
+  if [ $# -gt 0 ]; then
+    request="$1"
+  else
+    # No request supplied on the command line — prompt for one. Empty
+    # input falls through to launching Pi with no initial message (the
+    # system prompt tells it to ask the user in that case).
+    print -P "%F{cyan}danix-add%f — what change would you like to make to dave_nix?"
+    print -P "%F{cyan}        %f (e.g. \"install ripgrep-all\", \"add git alias lol\"; empty = drop into Pi TUI)"
+    printf "> "
+    IFS= read -r request || request=""
+  fi
   # Pi: --append-system-prompt loads the rules; positional arg (if any) is
-  # the initial user message. With no arg, Pi drops into the TUI and the
-  # prompt instructs it to ask the user what change they want.
+  # the initial user message. With no request, Pi drops into the TUI and
+  # the prompt instructs it to ask the user what change they want.
   op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
     pi --thinking medium \
        --append-system-prompt ~/.config/dave_nix/danix-add-prompt.md \
-       ${1:+"$1"}
+       ${request:+"$request"}
 }
 
 # Front-end for `_danix_add_run`. Defined as a function (not an alias) so
