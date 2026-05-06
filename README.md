@@ -61,11 +61,17 @@ dotfiles, sets macOS system preferences, and installs Homebrew casks.
 
 ### 5. Post-Setup
 
-**Clone the repo** (for future config edits):
+**Clone the repo** (for future config edits) to whatever path you set
+as `repoPath` in `private.nix`. The default in `private.nix.example` is
+`~/code/dave_nix`:
 
 ```bash
 git clone git@github.com:dh7892/dave_nix.git ~/code/dave_nix
 ```
+
+If you clone somewhere else, update `repoPath` in
+`~/.config/dave_nix/private.nix` to match — the `nixswitch`, `nixup`,
+and `nixupdate-wrapped` aliases all read it from there.
 
 **1Password secrets**: Install the 1Password desktop app, enable CLI
 integration (Settings > Developer > "Integrate with CLI"), and sign in.
@@ -111,7 +117,7 @@ the account shorthand comes from `private.opAccount`.
 
 | Alias       | Description                                          |
 |-------------|------------------------------------------------------|
-| `nixswitch` | Apply config changes from `~/code/dave_nix`          |
+| `nixswitch` | Apply config changes from `private.repoPath`         |
 | `nixup`     | Update all flake inputs and rebuild                  |
 
 ## Notes
@@ -119,4 +125,4 @@ the account shorthand comes from `private.opAccount`.
 - **Platform**: Apple Silicon macOS only (`aarch64-darwin`)
 - **Neovim**: Managed via the [davim](https://github.com/dh7892/davim) flake
 - **Shells**: Zsh (primary, vi mode, auto-tmux) and Nushell
-- **Repo location**: Must be at `~/code/dave_nix` for shell aliases to work
+- **Repo location**: Set `private.repoPath` in `~/.config/dave_nix/private.nix` to wherever you cloned this repo; the shell aliases read it from there

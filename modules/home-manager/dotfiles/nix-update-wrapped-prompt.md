@@ -1,6 +1,8 @@
 # Task: Update manually-wrapped Nix packages
 
-You are running in `~/code/dave_nix`. Your job is to update every manually-pinned
+You are running at the root of the `dave_nix` repo (the working directory is
+already set for you; treat all paths in this prompt as repo-relative). Your
+job is to update every manually-pinned
 package declared in the **WRAPPED PACKAGES** region of
 `modules/home-manager/default.nix` to its latest upstream version.
 

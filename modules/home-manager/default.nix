@@ -199,6 +199,10 @@
     # so non-interactive shells (e.g. the `_nixupdate_wrapped_run` worker) can
     # read it without going through zsh aliases.
     file.".config/dave_nix/op-account".text = private.opAccount + "\n";
+    # Absolute path to this repo's local clone. Read by shell helpers
+    # (e.g. `_nixupdate_wrapped_run` in zshrc) that need to cd into
+    # the repo without hardcoding the path.
+    file.".config/dave_nix/repo-path".text = private.repoPath + "\n";
   };
   programs = {
     atuin = {
@@ -255,14 +259,14 @@
         nixswitch = ''
           if [ ! -f "$HOME/.config/dave_nix/private.nix" ]; then
             mkdir -p "$HOME/.config/dave_nix"
-            cp ~/code/dave_nix/private.nix.example "$HOME/.config/dave_nix/private.nix"
+            cp ${private.repoPath}/private.nix.example "$HOME/.config/dave_nix/private.nix"
             echo "Created $HOME/.config/dave_nix/private.nix from template."
             echo "Edit it with your details, then re-run nixswitch."
           else
-            sudo darwin-rebuild switch --flake ~/code/dave_nix#default --impure
+            sudo darwin-rebuild switch --flake ${private.repoPath}#default --impure
           fi
         '';
-        nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
+        nixup = "pushd ${private.repoPath}; nix flake update; nixswitch";
         # Agentic update of manually-wrapped (non-flake) packages.
         # Worker is the `_nixupdate_wrapped_run` function defined in dotfiles/zshrc.
         # Edits files only — does NOT rebuild. If invoked inside zellij, opens a

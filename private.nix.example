@@ -28,4 +28,10 @@
   # "my.1password.eu"). Used by `op run` wrappers around tools that need
   # API keys (pi, opencode, ...). Not strictly secret, but per-machine.
   opAccount = "my.1password.com";
+
+  # Absolute path to your local clone of this repo. Used by the
+  # `nixswitch` / `nixup` / `nixupdate-wrapped` aliases so they don't
+  # have to hardcode a path. Must be an absolute path (no `~`); Nix
+  # does not expand `~` inside string values.
+  repoPath = "/Users/your-mac-short-username/code/dave_nix";
 }

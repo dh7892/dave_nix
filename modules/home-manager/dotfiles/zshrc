@@ -30,8 +30,9 @@ fi
 # unreliable across interactive/non-interactive subshell boundaries. The
 # `op-account` file is written by home-manager from `private.opAccount`.
 _nixupdate_wrapped_run() {
-  local op_account
+  local op_account repo_path
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
-  cd ~/code/dave_nix && op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+  repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
+  cd "$repo_path" && op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
     pi --thinking medium "$(cat ~/.config/dave_nix/nix-update-wrapped-prompt.md)"
 }
