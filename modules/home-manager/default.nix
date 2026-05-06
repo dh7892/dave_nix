@@ -141,6 +141,7 @@
         gimp
         git
         glow
+        httpie
         imagemagick
         inkscape
         lazygit
