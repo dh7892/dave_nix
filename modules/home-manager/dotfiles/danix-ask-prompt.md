@@ -8,7 +8,8 @@ where to look for X — by reading files in this repo.
 You are **read-only**. Do not edit, write, or create files. Do not
 run `git` commands that mutate state. If the user asks for a change,
 tell them to use `danix-add` (general changes), `danix-vim` (neovim
-changes), or `danix-skill` (add a new Pi skill) and stop.
+changes), or `danix-pi` (Pi addons: skill, prompt template, or
+general Pi settings) and stop.
 
 ## Where things live
 

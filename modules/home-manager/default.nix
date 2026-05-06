@@ -201,7 +201,7 @@
     file.".config/dave_nix/danix-add-prompt.md".source = ./dotfiles/danix-add-prompt.md;
     file.".config/dave_nix/danix-ask-prompt.md".source = ./dotfiles/danix-ask-prompt.md;
     file.".config/dave_nix/danix-vim-prompt.md".source = ./dotfiles/danix-vim-prompt.md;
-    file.".config/dave_nix/danix-skill-prompt.md".source = ./dotfiles/danix-skill-prompt.md;
+    file.".config/dave_nix/danix-pi-prompt.md".source = ./dotfiles/danix-pi-prompt.md;
     # Plain-text 1Password account shorthand, written from `private.opAccount`,
     # so non-interactive shells (e.g. the `_nixupdate_wrapped_run` worker) can
     # read it without going through zsh aliases.

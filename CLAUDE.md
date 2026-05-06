@@ -42,7 +42,7 @@ nixpkgs ships) and is wrapped by hand with a pinned `version` + hash.
   for the updater. Flake inputs (davim, claude-code, fenix, obsidible,
   nixpkgs, …) update via `nix flake update` and don't belong in the region.
 
-## Agentic helpers (`danix-add`, `danix-vim`, `danix-ask`, `danix-skill`)
+## Agentic helpers (`danix-add`, `danix-vim`, `danix-ask`, `danix-pi`)
 
 Four Pi-driven helpers, each with its own system prompt under
 `dotfiles/`:
@@ -60,13 +60,15 @@ Four Pi-driven helpers, each with its own system prompt under
 - **`danix-ask`** (`dotfiles/danix-ask-prompt.md`) — **read-only**
   Q&A about the setup (what's installed, what keybindings exist,
   where something is configured). Does not edit, does not commit.
-- **`danix-skill`** (`dotfiles/danix-skill-prompt.md`) — designs and
-  adds a new Pi *skill* under
-  `modules/home-manager/dotfiles/pi/skills/<name>/`. Walks the user
-  through name + one-line description + body, writes `SKILL.md` plus
-  any helper scripts, dry-run-builds, commits. The user runs
-  `danix-switch`. Adding Pi *extensions* (TS files) and pi-packages
-  is explicitly out of scope for this helper.
+- **`danix-pi`** (`dotfiles/danix-pi-prompt.md`) — designs and adds
+  Pi addons managed by this flake. Covers three shapes: a **skill**
+  (`dotfiles/pi/skills/<name>/SKILL.md`), a **prompt template**
+  (`dotfiles/pi/prompts/<name>.md`), or **general Pi config** (the
+  `piSettings` attrset in `modules/home-manager/pi.nix`, e.g.
+  `theme`, `defaultModel`, declarative `packages` list). Walks the
+  user through design, writes files, dry-run-builds, commits. The
+  user runs `danix-switch`. Pi *extensions* (TS files) and adding
+  brand-new manually-wrapped packages are explicitly out of scope.
 
 If you (a future agent or human) add a new convention to this file
 or introduce a new "shape" of change one of these helpers should know

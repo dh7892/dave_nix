@@ -253,22 +253,23 @@ danix-vim() {
   fi
 }
 
-# Worker for the `danix-skill` function. Drives a Pi session that adds
-# a new Pi *skill* (under modules/home-manager/dotfiles/pi/skills/<name>/)
-# to this flake: design the skill with the user, write SKILL.md +
-# helper files, git-add, dry-run build, commit. The user runs
-# `danix-switch` themselves to apply.
-_danix_skill_run() {
+# Worker for the `danix-pi` function. Drives a Pi session that adds or
+# tweaks a Pi addon in this flake: a skill (dotfiles/pi/skills/<name>/),
+# a prompt template (dotfiles/pi/prompts/<name>.md), or general Pi
+# config (piSettings in modules/home-manager/pi.nix). Designs the
+# change with the user, writes files, git-adds, dry-run builds,
+# commits. The user runs `danix-switch` themselves.
+_danix_pi_run() {
   local op_account repo_path request
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
   if [ -z "$repo_path" ]; then
-    echo "danix-skill: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
+    echo "danix-pi: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
     return 1
   fi
   cd "$repo_path" || return 1
   if [ -n "$(git status --porcelain)" ]; then
-    echo "danix-skill: working tree at $repo_path is dirty." >&2
+    echo "danix-pi: working tree at $repo_path is dirty." >&2
     echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
     git -c color.status=always status --short >&2
     return 1
@@ -276,29 +277,29 @@ _danix_skill_run() {
   if [ $# -gt 0 ]; then
     request="$1"
   else
-    print -P "%F{cyan}danix-skill%f — what skill would you like to add to Pi?"
-    print -P "%F{cyan}          %f (e.g. \"brave web search\", \"extract text from PDFs\"; empty = drop into Pi TUI)"
+    print -P "%F{cyan}danix-pi%f — what Pi addon would you like to add or change?"
+    print -P "%F{cyan}        %f (skills, prompt templates, or general Pi settings; empty = drop into Pi TUI)"
     printf "> "
     IFS= read -r request || request=""
   fi
   op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
     pi --thinking medium \
-       --append-system-prompt ~/.config/dave_nix/danix-skill-prompt.md \
+       --append-system-prompt ~/.config/dave_nix/danix-pi-prompt.md \
        ${request:+"$request"}
 }
 
-# Front-end for `_danix_skill_run`.
-danix-skill() {
+# Front-end for `_danix_pi_run`.
+danix-pi() {
   if [ -n "$ZELLIJ" ]; then
     if [ $# -gt 0 ]; then
       local arg_q
       arg_q="${(q)1}"
-      zellij run --floating --name danix-skill -- zsh -ic "_danix_skill_run $arg_q"
+      zellij run --floating --name danix-pi -- zsh -ic "_danix_pi_run $arg_q"
     else
-      zellij run --floating --name danix-skill -- zsh -ic _danix_skill_run
+      zellij run --floating --name danix-pi -- zsh -ic _danix_pi_run
     fi
   else
-    _danix_skill_run "$@"
+    _danix_pi_run "$@"
   fi
 }
 
@@ -313,7 +314,7 @@ danix-skill() {
 typeset -gA _DANIX_COMMANDS=(
   add     "Agentically make a change to this flake"
   ask     "Ask Pi questions about this nix setup (read-only)"
-  skill   "Agentically design + add a new Pi skill"
+  pi      "Agentically add/tweak a Pi addon (skill, prompt template, or settings)"
   switch  "Rebuild & activate the system (sudo)"
   up      "nix flake update + switch"
   update  "Agentically update manually-wrapped packages"
