@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   pkgs-unstable,
   davim,
@@ -6,20 +7,34 @@
   fenix,
   obsidible,
   mySystem,
+  private,
   lib,
   ...
 }:
     let
-      # To update: bump version, then run:
-      #   nix-prefetch-url https://github.com/anomalyco/opencode/releases/download/v<NEW_VERSION>/opencode-darwin-arm64.zip
-      # and replace the sha256 with the output.
+      # ============================================================
+      # WRAPPED PACKAGES — BEGIN
+      #
+      # Every derivation between the BEGIN and END markers is manually
+      # pinned (version + hash) and therefore needs periodic updates.
+      # The `nixupdate-wrapped` alias launches an agent that reads this
+      # region, detects the fetcher used by each `src = ...`, and bumps
+      # `version`/`rev` plus the corresponding hash.
+      #
+      # To add a new manually-pinned package: define it inside this
+      # region and prefix it with a `# update-source:` comment that
+      # tells the agent where to look for the latest version. Anything
+      # outside this region is considered out of scope for the updater.
+      # ============================================================
+
+      # update-source: github-release anomalyco/opencode (asset: opencode-darwin-arm64.zip)
       opencode-pkg = pkgs.stdenv.mkDerivation rec {
         pname = "opencode";
-        version = "1.1.25";
+        version = "1.14.38";
 
         src = pkgs.fetchurl {
           url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-darwin-arm64.zip";
-          sha256 = "00adyjcri52n9y8xwlcx2mgzij420ayqr9aqk865iv0ynv9991j1";
+          sha256 = "0p0ykc10xyqx1b76s64s5sfmkzlzh5ap3135b50wk9v0y2g3v6jl";
         };
 
         nativeBuildInputs = [ pkgs.unzip ];
@@ -41,15 +56,14 @@
         };
     };
 
-      # To update: bump version and sha256. Get new sha256 with:
-      #   nix-prefetch-url https://github.com/badlogic/pi-mono/releases/download/v<NEW_VERSION>/pi-darwin-arm64.tar.gz
+      # update-source: github-release badlogic/pi-mono (asset: pi-darwin-arm64.tar.gz)
       pi-pkg = pkgs.stdenv.mkDerivation rec {
         pname = "pi-coding-agent";
-        version = "0.71.0";
+        version = "0.73.0";
 
         src = pkgs.fetchurl {
           url = "https://github.com/badlogic/pi-mono/releases/download/v${version}/pi-darwin-arm64.tar.gz";
-          sha256 = "01q8ys7wfdswv8m59qbqrxb0k8ii319fgq328w32rjqf4n5wjprf";
+          sha256 = "0c1d1mw7gbk0n58xlhgwahrfakhqf42lqj6kwsx5dgyf7pww630v";
         };
 
         unpackPhase = ''
@@ -57,9 +71,12 @@
         '';
 
         installPhase = ''
-          mkdir -p $out/bin
-          cp pi/pi $out/bin/pi
-          chmod +x $out/bin/pi
+          # Install everything into lib/ so the Bun binary can find package.json,
+          # wasm files, themes, and export-html assets relative to itself.
+          mkdir -p $out/lib/pi-coding-agent $out/bin
+          cp -r pi/. $out/lib/pi-coding-agent/
+          chmod +x $out/lib/pi-coding-agent/pi
+          ln -s $out/lib/pi-coding-agent/pi $out/bin/pi
         '';
 
         meta = with lib; {
@@ -68,28 +85,19 @@
           platforms = platforms.darwin;
         };
     };
-      tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
+
+      # update-source: github-tag tmux-plugins/tpm (rev pinned to a release tag)
       tpm = pkgs.fetchFromGitHub {
         owner = "tmux-plugins";
         repo = "tpm";
         rev = "v3.1.0";
         sha256 = "18i499hhxly1r2bnqp9wssh0p1v391cxf10aydxaa7mdmrd3vqh9";
       };
-      myDavim = davim.packages.${mySystem}.default;
-      claudeCodePkg = claude-code.packages.${mySystem}.default;
-      obsidiblePkg = obsidible.packages.${mySystem}.default;
 
-      # Complete stable Rust toolchain via fenix
-      rustToolchain = fenix.packages.${mySystem}.stable.withComponents [
-        "cargo"
-        "clippy"
-        "rustc"
-        "rustfmt"
-        "rust-analyzer"
-      ];
-
-      # rmc: convert reMarkable .rm files to SVG/PDF/markdown (not in nixpkgs)
-      # Note: rmc 0.3.0 pins rmscene >=0.6.0,<0.7.0 but works fine with 0.5.0
+      # update-source: pypi rmc
+      # Note: rmc 0.3.0 pins rmscene >=0.6.0,<0.7.0 but works fine with 0.5.0;
+      # if a future release relaxes this, the `pythonRelaxDeps` line may be
+      # removable — flag for human review rather than editing it automatically.
       rmc = pkgs.python3Packages.buildPythonApplication {
         pname = "rmc";
         version = "0.3.0";
@@ -103,6 +111,24 @@
         dependencies = with pkgs.python3Packages; [ click rmscene ];
         pythonRelaxDeps = [ "rmscene" ];
       };
+
+      # ============================================================
+      # WRAPPED PACKAGES — END
+      # ============================================================
+
+      tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
+      myDavim = davim.packages.${mySystem}.default;
+      claudeCodePkg = claude-code.packages.${mySystem}.default;
+      obsidiblePkg = obsidible.packages.${mySystem}.default;
+
+      # Complete stable Rust toolchain via fenix
+      rustToolchain = fenix.packages.${mySystem}.stable.withComponents [
+        "cargo"
+        "clippy"
+        "rustc"
+        "rustfmt"
+        "rust-analyzer"
+      ];
 
       myPackages = with pkgs; [
         # General tools
@@ -155,12 +181,24 @@
     };
     file.".secrets.template".source = ./dotfiles/secrets;
     file.".local_shell_settings.template.sh".source = ./dotfiles/local_shell_settings.template.sh;
-    file.".config/zellij/config.kdl".source = ./dotfiles/zellij.kdl;
+    # zellij.kdl is templated: `@HOME@` is replaced with the user's home dir
+    # because zellij's `Run` action doesn't expand ~ or $HOME at runtime.
+    file.".config/zellij/config.kdl".text =
+      builtins.replaceStrings
+        [ "@HOME@" ]
+        [ config.home.homeDirectory ]
+        (builtins.readFile ./dotfiles/zellij.kdl);
+    file.".config/zellij/cheatsheet.txt".source = ./dotfiles/zellij-cheatsheet.txt;
     file.".config/karabiner/karabiner.json" = {
       source = ./dotfiles/karabiner/karabiner.json;
       force = true;
     };
     file.".aerospace.toml".source = ./dotfiles/aerospace.toml;
+    file.".config/dave_nix/nix-update-wrapped-prompt.md".source = ./dotfiles/nix-update-wrapped-prompt.md;
+    # Plain-text 1Password account shorthand, written from `private.opAccount`,
+    # so non-interactive shells (e.g. the `_nixupdate_wrapped_run` worker) can
+    # read it without going through zsh aliases.
+    file.".config/dave_nix/op-account".text = private.opAccount + "\n";
   };
   programs = {
     atuin = {
@@ -193,7 +231,19 @@
     fzf.enable = true;
     fzf.enableZshIntegration = true;
     eza.enable = true;
-    git.enable = true;
+    git = {
+      enable = true;
+      userName = private.fullName;
+      userEmail = private.email;
+      aliases = {
+        hist = ''!git --no-pager log --pretty=format:"%h %ad | %s%d [%an]" --graph --date=short'';
+        co = "checkout";
+      };
+      extraConfig = {
+        push.autoSetupRemote = true;
+        rerere.enabled = true;
+      };
+    };
     zsh = {
       enable = true;
       enableCompletion = true;
@@ -202,10 +252,34 @@
       shellAliases = {
         ls = "ls --color=auto -F";
         lg = "lazygit";
-        nixswitch = "sudo darwin-rebuild switch --flake ~/code/dave_nix#default";
+        nixswitch = ''
+          if [ ! -f "$HOME/.config/dave_nix/private.nix" ]; then
+            mkdir -p "$HOME/.config/dave_nix"
+            cp ~/code/dave_nix/private.nix.example "$HOME/.config/dave_nix/private.nix"
+            echo "Created $HOME/.config/dave_nix/private.nix from template."
+            echo "Edit it with your details, then re-run nixswitch."
+          else
+            sudo darwin-rebuild switch --flake ~/code/dave_nix#default --impure
+          fi
+        '';
         nixup = "pushd ~/code/dave_nix; nix flake update; nixswitch";
+        # Agentic update of manually-wrapped (non-flake) packages.
+        # Worker is the `_nixupdate_wrapped_run` function defined in dotfiles/zshrc.
+        # Edits files only — does NOT rebuild. If invoked inside zellij, opens a
+        # floating pane; otherwise runs inline.
+        nixupdate-wrapped = ''
+          if [ -n "''$ZELLIJ" ]; then
+            zellij run --floating --name nix-update -- zsh -ic _nixupdate_wrapped_run
+          else
+            _nixupdate_wrapped_run
+          fi
+        '';
         vi = "nvim";
-        opencode = "op run --account=\${OP_ACCOUNT:-my.1password.eu} --env-file ~/.secrets.template --no-masking -- opencode";
+        # API-key-bearing tools are wrapped with `op run` so the key is pulled
+        # fresh from 1Password each invocation; nothing sensitive lands on disk.
+        # Requires the 1Password desktop app installed and CLI integration enabled.
+        opencode = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- opencode";
+        pi = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- pi";
         shell-setup = "cp ~/.local_shell_settings.template.sh ~/local_shell_settings.sh && echo 'Created ~/local_shell_settings.sh -- edit it with your personal settings.'";
         shell-setup-check = ''
           echo "Checking local shell settings..."
@@ -213,9 +287,6 @@
           if [ ! -e "$HOME/local_shell_settings.sh" ]; then
             echo "  MISSING: ~/local_shell_settings.sh (run 'shell-setup' to create from template)"
             missing=1
-          fi
-          if [ -z "''${OP_ACCOUNT:-}" ]; then
-            echo "  UNSET: OP_ACCOUNT (needed by opencode alias, defaults to my.1password.eu)"
           fi
           if [ "$missing" -eq 0 ]; then
             echo "  All good!"

@@ -21,5 +21,17 @@ else
   echo "Note: ~/local_shell_settings.sh not found. Run 'shell-setup' to create it from the template."
 fi
 
-# Source secrets if available
-if [ -e "${HOME}/.secrets.sh" ]; then source "${HOME}/.secrets.sh"; fi
+# Worker for the `nixupdate-wrapped` alias (see modules/home-manager/default.nix).
+# Kept as a function so it's available in non-interactive subshells too
+# (e.g. when zellij spawns a pane via `zsh -ic ...`).
+#
+# We invoke `op run` explicitly here rather than relying on the `pi` alias,
+# because zsh expands aliases lazily inside functions and that expansion is
+# unreliable across interactive/non-interactive subshell boundaries. The
+# `op-account` file is written by home-manager from `private.opAccount`.
+_nixupdate_wrapped_run() {
+  local op_account
+  op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
+  cd ~/code/dave_nix && op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+    pi --thinking medium "$(cat ~/.config/dave_nix/nix-update-wrapped-prompt.md)"
+}

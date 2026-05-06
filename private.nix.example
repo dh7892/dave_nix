@@ -1,0 +1,31 @@
+# Per-machine private config for dave_nix.
+#
+# This file lives OUTSIDE the repo at:
+#   ~/.config/dave_nix/private.nix
+#
+# It is read at flake evaluation time and supplies values that are
+# either personal (PII we don't want in a public repo) or per-machine
+# (e.g. the macOS short username may differ between boxes).
+#
+# How to populate on a new machine — pick whichever you like:
+#   - Copy/paste contents from a 1Password Secure Note via the web UI.
+#   - Type it in by hand (it's only a few fields).
+#   - AirDrop / scp from another machine.
+#   - `op read` if you happen to have the 1Password CLI already.
+#
+# `nixswitch` will auto-create this file from this template if it's
+# missing, then prompt you to fill it in.
+
+{
+  # macOS short username (the directory name under /Users).
+  username = "your-mac-short-username";
+
+  # Used for git commits.
+  fullName = "Your Name";
+  email    = "you@example.com";
+
+  # 1Password account shorthand (e.g. "my.1password.com" or
+  # "my.1password.eu"). Used by `op run` wrappers around tools that need
+  # API keys (pi, opencode, ...). Not strictly secret, but per-machine.
+  opAccount = "my.1password.com";
+}

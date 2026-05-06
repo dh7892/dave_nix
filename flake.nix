@@ -41,7 +41,43 @@
   }:
   let
     mySystem = "aarch64-darwin";
-    username = "dhills";
+
+    # Per-machine private config (PII / username). Lives outside the repo
+    # at ~/.config/dave_nix/private.nix. See ./private.nix.example for the
+    # schema. Reading $HOME requires --impure (handled by the `nixswitch`
+    # alias and documented in the README bootstrap steps).
+    #
+    # Prefer $SUDO_USER (so `sudo darwin-rebuild` finds the invoking user's
+    # home rather than /var/root); fall back to $HOME for non-sudo runs.
+    sudoUser = builtins.getEnv "SUDO_USER";
+    homeDir =
+      if sudoUser != ""
+      then "/Users/${sudoUser}"
+      else builtins.getEnv "HOME";
+    privatePath = "${homeDir}/.config/dave_nix/private.nix";
+    private =
+      if builtins.pathExists privatePath
+      then import privatePath
+      else throw ''
+
+        Missing per-machine config: ${privatePath}
+
+        Create that file before building. Schema:
+
+          {
+            username  = "your-mac-short-username";
+            fullName  = "Your Name";
+            email     = "you@example.com";
+            opAccount = "my.1password.com";
+          }
+
+        A template lives at ./private.nix.example in this repo. The
+        `nixswitch` alias will auto-copy it for you on subsequent runs.
+        On first bootstrap, create the file by hand (or paste from
+        1Password) before invoking darwin-rebuild.
+      '';
+    username = private.username;
+
     pkgs-unstable = import nixpkgs-unstable {
       system = mySystem;
       config.allowUnfree = true;
@@ -62,7 +98,7 @@
           home-manager = {
             backupFileExtension = "backup";
             useGlobalPkgs = true;
-            extraSpecialArgs = {inherit davim claude-code fenix obsidible mySystem pkgs-unstable;};
+            extraSpecialArgs = {inherit davim claude-code fenix obsidible mySystem pkgs-unstable private;};
             users.${username}.imports = [./modules/home-manager];
           };
         }
