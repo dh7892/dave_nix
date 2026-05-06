@@ -74,6 +74,29 @@ WORKTREES_PARENT="$REPO_ROOT/../$REPO_NAME-worktrees"
 mkdir -p "$WORKTREES_PARENT"
 WORKTREES_PARENT=$(cd "$WORKTREES_PARENT" && pwd)
 
+# ---- shared env dump ------------------------------------------------
+#
+# Dump our current env once and let every worker source it. Rationale:
+# the user's `pi` is typically a shell alias that wraps the real binary
+# in a secret-injecting command (e.g. `op run --env-file ... -- pi`),
+# which prompts for biometric auth on each invocation. If `pi-fanout`
+# is itself wrapped with the same outer command (see the matching
+# shellAlias in dave_nix), our env already has the resolved secrets;
+# propagating that env to the workers means each worker can run raw
+# `pi` without re-triggering the wrapper.
+#
+# If `pi-fanout` is NOT wrapped (i.e. the user has no such setup), the
+# dump just contains the normal interactive env, which is harmless
+# — each worker will still fall back to `$SHELL -ic` if running pi
+# directly fails to find a provider.
+
+shared_env_dir=$(mktemp -d -t pi-fanout-env-XXXXXX)
+chmod 700 "$shared_env_dir"
+shared_env_file="$shared_env_dir/env"
+env -0 > "$shared_env_file"
+chmod 600 "$shared_env_file"
+export PI_FANOUT_SHARED_ENV="$shared_env_file"
+
 # KDL string escape: backslash and double-quote. Used only for path-shaped
 # values (cwd, command). The prompt itself sits in a separate text file so
 # we never have to escape its content into KDL.
@@ -152,15 +175,45 @@ while IFS= read -r task_rel; do
         -e "s|{{MAIN_WORKTREE}}|$REPO_ROOT|g" \
         "$PROMPT_TEMPLATE" > "$prompt_file"
 
+    # Drop the shared env-file path next to the launcher so the launcher
+    # doesn't have to be regenerated per-fanout with the path baked in.
+    printf '%s' "$shared_env_file" > "$layout_dir/env_path.txt"
+
     cat > "$launcher" <<'LAUNCHER'
 #!/usr/bin/env bash
-# Spawned by zellij for a fanned-out pi worker. We go through the user's
-# interactive shell so shell aliases (e.g. a `pi` alias that wraps the real
-# binary with `op run --env-file ...` for API keys) and rc-file env vars are
-# in scope. Without this, pi launches with an empty env and no provider.
+# Spawned by zellij for a fanned-out pi worker.
+#
+# Strategy: if pi-fanout dumped a shared env file (the common case when
+# pi-fanout itself is wrapped in a secret-injecting command like
+# `op run --env-file ... -- pi-fanout`), source it and exec raw `pi` —
+# the API keys are already baked in, so no biometric prompt is needed.
+#
+# If no shared env is available (or sourcing it doesn't get us a
+# working provider), fall back to launching pi through the user's
+# interactive shell so any `pi` alias / rc-file env setup applies.
 set -eu
 DIR=$(cd "$(dirname "$0")" && pwd)
 PROMPT=$(cat "$DIR/prompt.txt")
+
+ENV_FILE=""
+if [ -f "$DIR/env_path.txt" ]; then
+    ENV_FILE=$(cat "$DIR/env_path.txt")
+fi
+
+if [ -n "$ENV_FILE" ] && [ -f "$ENV_FILE" ]; then
+    # Source the shared env, skipping vars that should stay per-pane
+    # (zellij sets its own ZELLIJ_* in each pane; PWD/OLDPWD/SHLVL/_
+    # are shell-managed; PS1 is interactive-shell-only).
+    while IFS= read -r -d '' kv; do
+        case "$kv" in
+            ZELLIJ*|PWD=*|OLDPWD=*|SHLVL=*|_=*|PS1=*) continue ;;
+            *) export "${kv?}" ;;
+        esac
+    done < "$ENV_FILE"
+    exec pi "$PROMPT"
+fi
+
+# Fallback: no shared env — go through the user's interactive shell.
 exec "${SHELL:-/bin/zsh}" -ic 'pi "$1"' pi-fanout-worker "$PROMPT"
 LAUNCHER
     chmod +x "$launcher"

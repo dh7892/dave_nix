@@ -287,6 +287,12 @@
         # Requires the 1Password desktop app installed and CLI integration enabled.
         opencode = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- opencode";
         pi = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- pi";
+        # Wrap pi-fanout with the same 1Password env injection so the resolved
+        # API keys land in pi-fanout's env once, then get propagated to each
+        # spawned worker via a per-fanout env-dump tempfile (see
+        # dotfiles/pi-fanout.sh). Without this wrap each worker would re-run
+        # `op run` independently and trigger its own biometric prompt.
+        pi-fanout = "op run --account=${private.opAccount} --env-file ~/.secrets.template --no-masking -- pi-fanout";
       };
       defaultKeymap = "viins";
       initContent = ''
