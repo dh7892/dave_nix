@@ -1,0 +1,64 @@
+ZELLIJ KEYBINDINGS — leader is Ctrl-b (tmux-style)
+====================================================
+Press q to dismiss · / to search · n / N to jump matches
+
+NORMAL MODE
+  Ctrl-b      enter tmux (leader) mode
+  Ctrl-g      enter locked mode (passthrough — for nested apps)
+
+LOCKED MODE
+  Ctrl-g      back to normal
+
+TMUX MODE  (Ctrl-b then …)
+  Splits
+    %         split right (vertical pipe)
+    "         split down
+    _         split down, full width
+
+  Pane focus
+    h j k l   move focus  left / down / up / right
+
+  Pane management
+    x         close focused pane (kills its process)
+    z         toggle fullscreen for focused pane
+    f         toggle pane frames
+    w         toggle floating panes (show/hide all floaters)
+    e         convert focused pane: floating ↔ embedded
+
+  Tabs
+    c         new tab
+    n / p     next / previous tab
+    1‥9       jump to tab N
+    ,         rename current tab
+
+  Modes
+    r         enter resize mode
+    ?         show this cheatsheet
+
+  Session
+    d         detach session
+    o         open session manager (floating)
+
+  Exit tmux mode
+    Esc       back to normal
+    Ctrl-b    back to normal
+
+RESIZE MODE  (Ctrl-b r, then …)
+  h j k l     grow pane toward  left / down / up / right
+  H J K L     shrink pane from  left / down / up / right
+  = / -       grow / shrink uniformly
+  Esc         back to normal
+  Ctrl-b      back to tmux mode
+
+RENAME-TAB MODE
+  Enter       confirm
+  Esc         cancel (undo rename)
+
+ZELLIJ CLI HELPERS (run from any shell)
+  zellij run -f -- <cmd>           open <cmd> in a floating pane
+  zellij run -f -n NAME -- <cmd>   …with a pane name
+  nixupdate-wrapped                Pi-driven update of wrapped packages
+
+NOTE
+  This file is hand-maintained. If you change keybindings in
+  modules/home-manager/dotfiles/zellij.kdl, update this file too.

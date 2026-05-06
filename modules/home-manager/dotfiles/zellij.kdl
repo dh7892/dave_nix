@@ -1,5 +1,21 @@
 // Zellij config — tmux-compatible keybindings
 // Leader: Ctrl-b (same as tmux)
+//
+// !!! IMPORTANT !!!
+// The default zellij status bar can NOT display every binding — it shows a
+// hardcoded subset baked into the compact-bar plugin. To compensate, we
+// maintain a hand-written cheatsheet at
+//   modules/home-manager/dotfiles/zellij-cheatsheet.txt
+// (deployed to ~/.config/zellij/cheatsheet.txt) and bind `?` in tmux mode
+// to open it in a floating `less` pane.
+//
+// >>> If you add, remove, or rename a binding below, also update the
+// >>> cheatsheet file in the same commit. <<<
+//
+// Templating: any occurrence of `@HOME@` in this file is replaced with the
+// user's home directory by home-manager at build time (see
+// modules/home-manager/default.nix). Zellij's `Run` action does not expand
+// `~` or `$HOME`, so we substitute it ourselves rather than hardcoding.
 
 // General settings
 default_mode "normal"
@@ -64,6 +80,17 @@ keybinds clear-defaults=true {
 
         // --- Resize mode (Ctrl-b then r) ---
         bind "r" { SwitchToMode "resize"; }
+
+        // --- Cheatsheet (Ctrl-b then ?) ---
+        // Opens a floating `less` pane with the hand-maintained keybind
+        // reference. Keep zellij-cheatsheet.txt in sync with this file!
+        bind "?" {
+            Run "less" "-R" "@HOME@/.config/zellij/cheatsheet.txt" {
+                floating true
+                close_on_exit true
+            };
+            SwitchToMode "normal";
+        }
 
         // --- Session management ---
         bind "d" { Detach; }
