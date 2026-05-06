@@ -62,6 +62,23 @@ modules/home-manager/dotfiles/pi/prompts/review.md
 ```
 `git add`, `danix-switch`. Invoke with `/review` inside Pi.
 
+**A new MCP server:**
+The `mcp` extension (`extensions/mcp.ts`) gives Pi a single tool that
+brokers calls to any MCP server. Add servers by editing the
+`mcpServers` attrset in `pi.nix`, e.g.
+```nix
+mcpServers = {
+  context7 = {
+    command = "npx";
+    args = [ "-y" "@upstash/context7-mcp" ];
+  };
+};
+```
+`danix-switch` re-renders `~/.config/mcporter/mcporter.json` and the
+extension picks the new server up on its next load. The agent's
+system prompt grows by ~one line (the server name list) regardless
+of how many servers are configured.
+
 **A pi-package from npm/git** (no local files needed):
 Edit `piSettings.packages` in `pi.nix`, e.g.
 ```nix

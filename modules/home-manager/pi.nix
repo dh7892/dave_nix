@@ -26,6 +26,32 @@ let
   piSettings = { };
 
   settingsJson = builtins.toJSON piSettings;
+
+  # ----------------------------------------------------------------
+  # MCP bridge config (TASK-007).
+  #
+  # We give Pi access to MCP servers via a *single* tool registered
+  # by `dotfiles/pi/extensions/mcp.ts`, which shells out to the
+  # `mcporter` CLI (wrapped in modules/home-manager/default.nix).
+  # The agent's system prompt grows by ~one tool description plus
+  # the list of server names below — not by every MCP tool.
+  #
+  # Add a server here as e.g.:
+  #
+  #   context7 = {
+  #     command = "npx";
+  #     args = [ "-y" "@upstash/context7-mcp" ];
+  #     env = { CONTEXT7_API_KEY = "..."; };  # 1Password template, see secrets/
+  #   };
+  #
+  # The shape matches mcporter's mcpServers config (the de-facto
+  # MCP client config schema). Default empty: see TASK-013
+  # (context7) and TASK-014 (Chrome) for follow-ups that populate it.
+  # ----------------------------------------------------------------
+  mcpServers = { };
+
+  mcpConfigJson = builtins.toJSON { mcpServers = mcpServers; };
+  mcpConfigPath = ".config/mcporter/mcporter.json";
 in
 {
   # Each entry inside dotfiles/pi/{extensions,skills,prompts} is
@@ -48,6 +74,12 @@ in
     # Layout doc, also exposed under ~/.config/dave_nix/ next to the
     # other agentic helper prompts so it's easy to point an agent at.
     ".config/dave_nix/pi-LAYOUT.md".source = ./dotfiles/pi/LAYOUT.md;
+
+    # mcporter config rendered from the `mcpServers` attrset above.
+    # The `mcp` Pi extension reads this file at load time to discover
+    # available server names (for the system-prompt snippet) and
+    # passes its absolute path to `mcporter --config` at call time.
+    ${mcpConfigPath}.text = mcpConfigJson;
   };
 
   # settings.json is *not* a symlink: Pi mutates it at runtime

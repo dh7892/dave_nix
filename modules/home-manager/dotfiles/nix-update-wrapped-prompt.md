@@ -55,10 +55,14 @@ than against package name.
 
 ### `pkgs.fetchurl { url = "https://github.com/<owner>/<repo>/releases/download/v${version}/<asset>"; sha256 = "..."; }`
 Hint will look like: `# update-source: github-release <owner>/<repo> (asset: <asset>)`.
+The `<asset>` in the hint may itself contain `${version}` (e.g.
+`mcporter-macos-arm64-v${version}.tar.gz`). Treat the literal `url = "..."`
+string in the derivation's `src` block as the source of truth: substitute the
+new version into every `${version}` occurrence in that URL.
 - Latest version:
   `curl -fsSL https://api.github.com/repos/<owner>/<repo>/releases/latest | jq -r .tag_name`
   (strip a leading `v`).
-- New hash: `nix-prefetch-url https://github.com/<owner>/<repo>/releases/download/v<NEW>/<asset>`
+- New hash: `nix-prefetch-url <URL with ${version} replaced by NEW>`.
 - Replace the `sha256 = "...";` value with the prefetch output.
 
 ### `pkgs.fetchFromGitHub { owner = ...; repo = ...; rev = "vX.Y.Z"; sha256 = "..."; }`

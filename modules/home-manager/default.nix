@@ -86,6 +86,34 @@
         };
     };
 
+      # update-source: github-release steipete/mcporter (asset: mcporter-macos-arm64-v${version}.tar.gz)
+      # The release ships a single Mach-O arm64 binary inside the tarball.
+      # Used by the Pi `mcp` extension (modules/home-manager/dotfiles/pi/extensions/mcp.ts)
+      # as a one-shot CLI bridge to MCP servers — keeps Pi's system prompt small.
+      mcporter-pkg = pkgs.stdenv.mkDerivation rec {
+        pname = "mcporter";
+        version = "0.10.1";
+
+        src = pkgs.fetchurl {
+          url = "https://github.com/steipete/mcporter/releases/download/v${version}/mcporter-macos-arm64-v${version}.tar.gz";
+          sha256 = "07qfkqcminc14g9a2sh7v43wgy0w9xbs6hvda163r8fbs2giwi8p";
+        };
+
+        dontUnpack = true;
+
+        installPhase = ''
+          mkdir -p $out/bin
+          tar -xzf $src -C $out/bin
+          chmod +x $out/bin/mcporter
+        '';
+
+        meta = with lib; {
+          description = "MCP CLI bridge — list/call MCP server tools as one-shot commands";
+          homepage = "https://github.com/steipete/mcporter";
+          platforms = platforms.darwin;
+        };
+      };
+
       # update-source: github-tag tmux-plugins/tpm (rev pinned to a release tag)
       tpm = pkgs.fetchFromGitHub {
         owner = "tmux-plugins";
@@ -183,7 +211,7 @@
   ];
   home = {
     stateVersion = "25.05";
-      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg pi-pkg];
+      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg pi-pkg mcporter-pkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
