@@ -42,18 +42,33 @@ nixpkgs ships) and is wrapped by hand with a pinned `version` + hash.
   for the updater. Flake inputs (davim, claude-code, fenix, obsidible,
   nixpkgs, …) update via `nix flake update` and don't belong in the region.
 
-## Agentic helpers (`danix-add`)
+## Agentic helpers (`danix-add`, `danix-vim`, `danix-ask`)
 
-The `danix-add` shell function (defined in `dotfiles/zshrc`, with its
-prompt at `dotfiles/danix-add-prompt.md`) launches a Pi session that
-makes a user-described change to this flake — adding a package,
-tweaking a `programs.*` block, editing a dotfile, etc. — then
-validates it with a dry-run `darwin-rebuild build` and commits on
-success. The user still runs `danix-switch` themselves.
+Three Pi-driven helpers, each with its own system prompt under
+`dotfiles/`:
 
-If you (a future agent or human) add a new convention to this file or
-introduce a new "shape" of change `danix-add` should know how to
-handle, also update `dotfiles/danix-add-prompt.md` so the helper stays
-in sync. Adding a wholly new manually-wrapped package is explicitly
-out of scope for `danix-add` (that ritual stays a human task; the
-`danix-update` flow then maintains it).
+- **`danix-add`** (`dotfiles/danix-add-prompt.md`) — makes a
+  user-described change anywhere in this flake **except** under
+  `./davim/`: adding a package, tweaking a `programs.*` block,
+  editing a dotfile, etc. Validates with a dry-run
+  `darwin-rebuild build`, commits on success. The user still runs
+  `danix-switch`.
+- **`danix-vim`** (`dotfiles/danix-vim-prompt.md`) — same shape as
+  `danix-add`, but scoped to the neovim (nixvim) config under
+  `./davim/`. Use this for plugin/keymap/LSP changes. Commits in
+  this repo; user runs `danix-switch`.
+- **`danix-ask`** (`dotfiles/danix-ask-prompt.md`) — **read-only**
+  Q&A about the setup (what's installed, what keybindings exist,
+  where something is configured). Does not edit, does not commit.
+
+If you (a future agent or human) add a new convention to this file
+or introduce a new "shape" of change one of these helpers should know
+how to handle, also update the relevant prompt under `dotfiles/` so
+the helper stays in sync. In particular: any new fact about *where*
+config lives (a new dotfile, a new module, a new subtree) belongs in
+`danix-ask-prompt.md` so the read-only helper can find it.
+
+Adding a wholly new manually-wrapped package is explicitly out of
+scope for `danix-add` (that ritual stays a human task; the
+`danix-update` flow then maintains it). New nixvim plugins, by
+contrast, *are* in scope for `danix-vim`.

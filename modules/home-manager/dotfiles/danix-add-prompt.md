@@ -47,11 +47,22 @@ You are **in scope** for: adding a package, tweaking a `programs.*`
 block, small module edits, adding/editing a dotfile, adding a single
 shell alias, small `private.nix.example` additions.
 
-You are **out of scope** for: introducing a new manually-wrapped
-package inside the WRAPPED PACKAGES region (that's a human task — the
-hash-pinning ritual is finicky and the `danix-update` flow then owns
-keeping it fresh). If the user's request requires a new wrapped
-package, explain that briefly and stop without editing files.
+You are **out of scope** for:
+
+- Introducing a new manually-wrapped package inside the WRAPPED
+  PACKAGES region (that's a human task — the hash-pinning ritual is
+  finicky and the `danix-update` flow then owns keeping it fresh).
+  If the user's request requires a new wrapped package, explain that
+  briefly and stop without editing files.
+- **Neovim / davim changes.** The neovim config lives in this repo
+  under `./davim/` (a `path:./davim` flake input) and has its own
+  dedicated helper, `danix-vim`, with conventions tuned for nixvim.
+  If the user's request is about adding/configuring a nvim plugin,
+  changing a nvim keymap, tweaking LSP/DAP/treesitter, etc., tell
+  them to run `danix-vim` instead and stop without editing files.
+  (Edits that touch *both* davim and the rest of dave_nix: do the
+  non-davim half here and tell the user to run `danix-vim` for the
+  rest.)
 
 If the request is ambiguous or seems larger than one or two focused
 edits, ask the user before charging ahead.

@@ -122,6 +122,8 @@ the account shorthand comes from `private.opAccount`.
 | `danix-up`          | Update all flake inputs and rebuild                                      |
 | `danix-update`      | Agentic update of manually-pinned packages in the WRAPPED PACKAGES region |
 | `danix-add`         | Agentic helper to make a free-form change to the flake (validates + commits; you run `danix-switch`). Optional CLI arg: `danix-add "install ripgrep-all"` |
+| `danix-vim`         | Like `danix-add`, but scoped to the neovim (`./davim/`) subtree. Optional CLI arg: `danix-vim "add the oil.nvim plugin"` |
+| `danix-ask`         | Read-only Q&A about your nix setup (what's installed, what keybindings exist, where something is configured). Optional CLI arg: `danix-ask "what's my telescope keybinding?"` |
 
 The old names `nixswitch`, `nixup`, and `nixupdate-wrapped` survive as
 deprecation shims that print a warning and call the new helpers. They
@@ -130,6 +132,6 @@ will be removed shortly.
 ## Notes
 
 - **Platform**: Apple Silicon macOS only (`aarch64-darwin`)
-- **Neovim**: Managed via the [davim](https://github.com/dh7892/davim) flake
+- **Neovim**: Managed via nixvim, in the `./davim/` subtree of this repo (consumed as a `path:./davim` flake input). Edit it via `danix-vim`. Still usable standalone as `github:dh7892/dave_nix?dir=davim`.
 - **Shells**: Zsh (primary, vi mode, auto-tmux) and Nushell
 - **Repo location**: Set `private.repoPath` in `~/.config/dave_nix/private.nix` to wherever you cloned this repo; the shell aliases read it from there

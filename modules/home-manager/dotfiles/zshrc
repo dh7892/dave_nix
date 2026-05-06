@@ -164,6 +164,95 @@ danix-add() {
   fi
 }
 
+# Worker for the `danix-ask` function. Drives a Pi session that answers
+# questions about this flake (what's installed, what keybindings exist,
+# etc.) read-only. No clean-tree check — the agent doesn't edit anything.
+_danix_ask_run() {
+  local op_account repo_path question
+  op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
+  repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
+  if [ -z "$repo_path" ]; then
+    echo "danix-ask: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
+    return 1
+  fi
+  cd "$repo_path" || return 1
+  if [ $# -gt 0 ]; then
+    question="$1"
+  else
+    print -P "%F{cyan}danix-ask%f — what would you like to know about your nix setup?"
+    print -P "%F{cyan}        %f (e.g. \"what's my telescope keybinding?\", \"is ripgrep installed?\"; empty = drop into Pi TUI)"
+    printf "> "
+    IFS= read -r question || question=""
+  fi
+  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+    pi --thinking medium \
+       --append-system-prompt ~/.config/dave_nix/danix-ask-prompt.md \
+       ${question:+"$question"}
+}
+
+# Front-end for `_danix_ask_run`.
+danix-ask() {
+  if [ -n "$ZELLIJ" ]; then
+    if [ $# -gt 0 ]; then
+      local arg_q
+      arg_q="${(q)1}"
+      zellij run --floating --name danix-ask -- zsh -ic "_danix_ask_run $arg_q"
+    else
+      zellij run --floating --name danix-ask -- zsh -ic _danix_ask_run
+    fi
+  else
+    _danix_ask_run "$@"
+  fi
+}
+
+# Worker for the `danix-vim` function. Drives a Pi session that makes a
+# focused change to the neovim (davim) config under ./davim/ in this
+# repo, dry-runs a build, and commits on success. Same shape as
+# `_danix_add_run` but scoped to the davim subtree.
+_danix_vim_run() {
+  local op_account repo_path request
+  op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
+  repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
+  if [ -z "$repo_path" ]; then
+    echo "danix-vim: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
+    return 1
+  fi
+  cd "$repo_path" || return 1
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "danix-vim: working tree at $repo_path is dirty." >&2
+    echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
+    git -c color.status=always status --short >&2
+    return 1
+  fi
+  if [ $# -gt 0 ]; then
+    request="$1"
+  else
+    print -P "%F{cyan}danix-vim%f — what change would you like to make to your neovim config?"
+    print -P "%F{cyan}        %f (e.g. \"add the oil.nvim plugin\", \"bind ,gs to lazygit\"; empty = drop into Pi TUI)"
+    printf "> "
+    IFS= read -r request || request=""
+  fi
+  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+    pi --thinking medium \
+       --append-system-prompt ~/.config/dave_nix/danix-vim-prompt.md \
+       ${request:+"$request"}
+}
+
+# Front-end for `_danix_vim_run`.
+danix-vim() {
+  if [ -n "$ZELLIJ" ]; then
+    if [ $# -gt 0 ]; then
+      local arg_q
+      arg_q="${(q)1}"
+      zellij run --floating --name danix-vim -- zsh -ic "_danix_vim_run $arg_q"
+    else
+      zellij run --floating --name danix-vim -- zsh -ic _danix_vim_run
+    fi
+  else
+    _danix_vim_run "$@"
+  fi
+}
+
 # ---------------------------------------------------------------------------
 # `danix` launcher
 #
@@ -174,9 +263,11 @@ danix-add() {
 # ---------------------------------------------------------------------------
 typeset -gA _DANIX_COMMANDS=(
   add     "Agentically make a change to this flake"
+  ask     "Ask Pi questions about this nix setup (read-only)"
   switch  "Rebuild & activate the system (sudo)"
   up      "nix flake update + switch"
   update  "Agentically update manually-wrapped packages"
+  vim     "Agentically make a change to the neovim (davim) config"
 )
 
 danix() {
