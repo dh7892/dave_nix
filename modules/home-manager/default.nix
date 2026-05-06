@@ -116,6 +116,16 @@
       # WRAPPED PACKAGES — END
       # ============================================================
 
+      # pi-fanout — fan out task .md files to parallel `pi` sessions,
+      # each in its own git worktree and Zellij tab. See
+      # plan/tasks/pending/TASK-001-pi-fanout.md for the design.
+      # NOT a danix-* helper: it's repo-agnostic and might travel.
+      pi-fanout = pkgs.writeShellApplication {
+        name = "pi-fanout";
+        runtimeInputs = with pkgs; [ git gum zellij coreutils gnused gnugrep findutils pi-pkg ];
+        text = builtins.readFile ./dotfiles/pi-fanout.sh;
+      };
+
       tmuxConfig = builtins.readFile ./dotfiles/tmux.conf;
       myDavim = davim.packages.${mySystem}.default;
       claudeCodePkg = claude-code.packages.${mySystem}.default;
@@ -130,7 +140,7 @@
         "rust-analyzer"
       ];
 
-      myPackages = with pkgs; [
+      myPackages = [ pi-fanout ] ++ (with pkgs; [
         # General tools
         aerospace
         bacon
@@ -163,7 +173,7 @@
         # Python tooling (pyenv managed via programs.pyenv)
         # Rust toolchain (stable, via fenix)
         rustToolchain
-      ];
+      ]);
     in
     {
   imports = [
