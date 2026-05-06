@@ -115,10 +115,12 @@ the account shorthand comes from `private.opAccount`.
 
 ## Ongoing Use
 
-| Alias       | Description                                          |
-|-------------|------------------------------------------------------|
-| `nixswitch` | Apply config changes from `private.repoPath`         |
-| `nixup`     | Update all flake inputs and rebuild                  |
+| Alias               | Description                                                              |
+|---------------------|--------------------------------------------------------------------------|
+| `nixswitch`         | Apply config changes from `private.repoPath`                             |
+| `nixup`             | Update all flake inputs and rebuild                                      |
+| `nixupdate-wrapped` | Agentic update of manually-pinned packages in the WRAPPED PACKAGES region |
+| `danix-add`         | Agentic helper to make a free-form change to the flake (validates + commits; you run `nixswitch`). Optional CLI arg: `danix-add "install ripgrep-all"` |
 
 ## Notes
 

@@ -37,3 +37,56 @@ _nixupdate_wrapped_run() {
   cd "$repo_path" && op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
     pi --thinking medium "$(cat ~/.config/dave_nix/nix-update-wrapped-prompt.md)"
 }
+
+# Worker for the `danix-add` function (defined just below).
+#
+# Drives a Pi session through making + dry-run-building + committing a
+# user-described change to this flake. The user runs `nixswitch` themselves.
+#
+# Usage (set by the alias):
+#   _danix_add_run                    # interactive: Pi asks what to change
+#   _danix_add_run "install ripgrep-all"  # passes request as Pi's first message
+#
+# Refuses to start if the working tree is dirty, to keep the agent's commit
+# focused on its own diff.
+_danix_add_run() {
+  local op_account repo_path
+  op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
+  repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
+  if [ -z "$repo_path" ]; then
+    echo "danix-add: ~/.config/dave_nix/repo-path is missing — run nixswitch once first." >&2
+    return 1
+  fi
+  cd "$repo_path" || return 1
+  if [ -n "$(git status --porcelain)" ]; then
+    echo "danix-add: working tree at $repo_path is dirty." >&2
+    echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
+    git -c color.status=always status --short >&2
+    return 1
+  fi
+  # Pi: --append-system-prompt loads the rules; positional arg (if any) is
+  # the initial user message. With no arg, Pi drops into the TUI and the
+  # prompt instructs it to ask the user what change they want.
+  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+    pi --thinking medium \
+       --append-system-prompt ~/.config/dave_nix/danix-add-prompt.md \
+       ${1:+"$1"}
+}
+
+# Front-end for `_danix_add_run`. Defined as a function (not an alias) so
+# we can forward $1 cleanly. If we're inside zellij, run the worker in a
+# floating pane; otherwise inline.
+danix-add() {
+  if [ -n "$ZELLIJ" ]; then
+    if [ $# -gt 0 ]; then
+      # Quote the arg for re-parsing inside `zsh -ic`.
+      local arg_q
+      arg_q="${(q)1}"
+      zellij run --floating --name danix-add -- zsh -ic "_danix_add_run $arg_q"
+    else
+      zellij run --floating --name danix-add -- zsh -ic _danix_add_run
+    fi
+  else
+    _danix_add_run "$@"
+  fi
+}

@@ -41,3 +41,19 @@ nixpkgs ships) and is wrapped by hand with a pinned `version` + hash.
 - Anything outside the WRAPPED PACKAGES region is considered out of scope
   for the updater. Flake inputs (davim, claude-code, fenix, obsidible,
   nixpkgs, …) update via `nix flake update` and don't belong in the region.
+
+## Agentic helpers (`danix-add`)
+
+The `danix-add` shell function (defined in `dotfiles/zshrc`, with its
+prompt at `dotfiles/danix-add-prompt.md`) launches a Pi session that
+makes a user-described change to this flake — adding a package,
+tweaking a `programs.*` block, editing a dotfile, etc. — then
+validates it with a dry-run `darwin-rebuild build` and commits on
+success. The user still runs `nixswitch` themselves.
+
+If you (a future agent or human) add a new convention to this file or
+introduce a new "shape" of change `danix-add` should know how to
+handle, also update `dotfiles/danix-add-prompt.md` so the helper stays
+in sync. Adding a wholly new manually-wrapped package is explicitly
+out of scope for `danix-add` (that ritual stays a human task; the
+`nixupdate-wrapped` flow then maintains it).
