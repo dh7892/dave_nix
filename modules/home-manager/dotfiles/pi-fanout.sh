@@ -128,27 +128,58 @@ while IFS= read -r task_rel; do
     fi
 
     worktree_dir="$WORKTREES_PARENT/$slug"
-    if [ -e "$worktree_dir" ]; then
-        echo "pi-fanout: worktree dir already exists, skipping: $worktree_dir" >&2
-        continue
-    fi
 
-    # Branch name collision?
+    # Prune any stale worktree admin entries up front so our checks below
+    # reflect reality (e.g. a previous run was aborted and the dir was
+    # rm -rf'd by hand without `git worktree remove`).
+    git -C "$REPO_ROOT" worktree prune >/dev/null 2>&1 || true
+
+    branch_exists=false
     if git -C "$REPO_ROOT" show-ref --verify --quiet "refs/heads/$branch"; then
-        echo "pi-fanout: branch '$branch' already exists, skipping" >&2
-        continue
+        branch_exists=true
     fi
 
-    echo "pi-fanout: creating worktree $worktree_dir on branch $branch"
-    git -C "$REPO_ROOT" worktree add -b "$branch" "$worktree_dir" "$CURRENT_BRANCH"
+    worktree_registered=false
+    if [ -d "$worktree_dir" ] && \
+       git -C "$worktree_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        worktree_registered=true
+    fi
+
+    if [ "$worktree_registered" = true ]; then
+        # Reuse an existing, valid worktree from a previous aborted fanout.
+        existing_branch=$(git -C "$worktree_dir" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "")
+        if [ "$existing_branch" != "$branch" ]; then
+            echo "pi-fanout: worktree $worktree_dir exists but is on branch '$existing_branch' (expected '$branch'), skipping" >&2
+            continue
+        fi
+        echo "pi-fanout: reusing existing worktree $worktree_dir on branch $branch"
+    elif [ -e "$worktree_dir" ]; then
+        echo "pi-fanout: path $worktree_dir exists but is not a registered git worktree, skipping" >&2
+        echo "           (remove it by hand or run 'git worktree remove --force' to recover)" >&2
+        continue
+    elif [ "$branch_exists" = true ]; then
+        # Branch left over from a previous abort; attach a fresh worktree to it.
+        echo "pi-fanout: branch $branch already exists, attaching new worktree at $worktree_dir"
+        git -C "$REPO_ROOT" worktree add "$worktree_dir" "$branch"
+    else
+        echo "pi-fanout: creating worktree $worktree_dir on branch $branch"
+        git -C "$REPO_ROOT" worktree add -b "$branch" "$worktree_dir" "$CURRENT_BRANCH"
+    fi
 
     # Move pending → in-progress inside the worktree, if convention holds.
+    # On a reused worktree the move may already have been done by the
+    # earlier aborted run; detect that and skip re-doing it.
     in_progress_dir="$worktree_dir/plan/tasks/in-progress"
     src_in_worktree="$worktree_dir/$task_rel"
+    dest_rel="plan/tasks/in-progress/$task_file_basename"
+    dest_in_worktree="$worktree_dir/$dest_rel"
     task_file_for_prompt=$task_rel
 
-    if [ -d "$in_progress_dir" ] && [ -f "$src_in_worktree" ]; then
-        dest_rel="plan/tasks/in-progress/$task_file_basename"
+    if [ -f "$dest_in_worktree" ]; then
+        # Already moved on a previous run.
+        task_file_for_prompt=$dest_rel
+        echo "pi-fanout: task already in in-progress, leaving as-is"
+    elif [ -d "$in_progress_dir" ] && [ -f "$src_in_worktree" ]; then
         git -C "$worktree_dir" mv "$task_rel" "$dest_rel"
         git -C "$worktree_dir" commit -m "Start $tab_name (move to in-progress)" >/dev/null
         task_file_for_prompt=$dest_rel
