@@ -56,7 +56,12 @@ danix-switch() {
     echo "danix-switch: ~/.config/dave_nix/repo-path is missing." >&2
     return 1
   fi
-  sudo darwin-rebuild switch --flake "${repo_path}#default" --impure
+  if sudo darwin-rebuild switch --flake "${repo_path}#default" --impure; then
+    echo
+    echo "✓ danix-switch completed at $(date '+%a %d %b %Y %H:%M:%S')"
+  else
+    return $?
+  fi
 }
 
 # nix flake update + danix-switch.
