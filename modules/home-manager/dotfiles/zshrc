@@ -105,18 +105,66 @@ _nixupdate_wrapped_run() {
     pi --thinking medium "$(cat ~/.config/dave_nix/nix-update-wrapped-prompt.md)"
 }
 
-# Worker for the `danix-add` function (defined just below).
+# ---------------------------------------------------------------------------
+# danix-add / danix-ask / danix-vim / danix-pi
 #
-# Drives a Pi session through making + dry-run-building + committing a
-# user-described change to this flake. The user runs `danix-switch` themselves.
+# Each helper does its pre-flight checks (repo-path present, working tree
+# clean where applicable) and prompts the user for a request *in the
+# current shell*, then exec's `op run -- pi ...` directly — either inline
+# or, when inside zellij, in a fresh floating pane.
+#
+# We deliberately do NOT wrap the launch in `zsh -ic "_danix_<name>_run"`
+# inside the floating pane. An interactive zsh in the new pane races Pi's
+# Kitty-keyboard-protocol negotiation (Pi sends `\e[?u` and waits ~150ms
+# for a reply); when zsh has already done its terminal setup and a
+# `read`-prompt has consumed bytes, that reply gets eaten and Pi falls
+# back to a mode where Shift+Enter is indistinguishable from Enter — i.e.
+# Shift+Enter submits the prompt instead of inserting a newline. Running
+# `op run -- pi` as the floating pane's command directly avoids the race
+# (TASK-0150).
+# ---------------------------------------------------------------------------
+
+# Internal: actually launch Pi. Args:
+#   $1 = pane name (e.g. danix-add) — only used when ZELLIJ is set
+#   $2 = repo path  (cwd for the Pi session)
+#   $3 = op account (for `op run --account=`)
+#   $4 = absolute path to the system-prompt MD file
+#   $5 = optional initial user message; empty string means "drop into TUI"
+_danix_launch_pi() {
+  local name="$1" repo_path="$2" op_account="$3" prompt="$4" request="$5"
+  if [ -n "$ZELLIJ" ]; then
+    zellij run --floating --name "$name" --cwd "$repo_path" -- \
+      op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+      pi --thinking medium \
+         --append-system-prompt "$prompt" \
+         ${request:+"$request"}
+  else
+    op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
+      pi --thinking medium \
+         --append-system-prompt "$prompt" \
+         ${request:+"$request"}
+  fi
+}
+
+# Internal: refuse if the repo working tree is dirty. Keeps the agent's
+# commit focused on its own diff. Caller passes its name + repo path.
+_danix_require_clean_tree() {
+  local name="$1" repo_path="$2"
+  if [ -n "$(git -C "$repo_path" status --porcelain)" ]; then
+    echo "$name: working tree at $repo_path is dirty." >&2
+    echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
+    git -C "$repo_path" -c color.status=always status --short >&2
+    return 1
+  fi
+}
+
+# danix-add — agentically make a change to this flake. Refuses to start
+# on a dirty tree.
 #
 # Usage:
-#   _danix_add_run                        # prompts for a request, then runs Pi
-#   _danix_add_run "install ripgrep-all"  # uses arg as Pi's first message
-#
-# Refuses to start if the working tree is dirty, to keep the agent's commit
-# focused on its own diff.
-_danix_add_run() {
+#   danix-add                          # prompts for a request, then runs Pi
+#   danix-add "install ripgrep-all"    # uses arg as Pi's first message
+danix-add() {
   local op_account repo_path request
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
@@ -124,13 +172,7 @@ _danix_add_run() {
     echo "danix-add: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
     return 1
   fi
-  cd "$repo_path" || return 1
-  if [ -n "$(git status --porcelain)" ]; then
-    echo "danix-add: working tree at $repo_path is dirty." >&2
-    echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
-    git -c color.status=always status --short >&2
-    return 1
-  fi
+  _danix_require_clean_tree danix-add "$repo_path" || return 1
   if [ $# -gt 0 ]; then
     request="$1"
   else
@@ -142,37 +184,14 @@ _danix_add_run() {
     printf "> "
     IFS= read -r request || request=""
   fi
-  # Pi: --append-system-prompt loads the rules; positional arg (if any) is
-  # the initial user message. With no request, Pi drops into the TUI and
-  # the prompt instructs it to ask the user what change they want.
-  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
-    pi --thinking medium \
-       --append-system-prompt ~/.config/dave_nix/danix-add-prompt.md \
-       ${request:+"$request"}
+  _danix_launch_pi danix-add "$repo_path" "$op_account" \
+    ~/.config/dave_nix/danix-add-prompt.md "$request"
 }
 
-# Front-end for `_danix_add_run`. Defined as a function (not an alias) so
-# we can forward $1 cleanly. If we're inside zellij, run the worker in a
-# floating pane; otherwise inline.
-danix-add() {
-  if [ -n "$ZELLIJ" ]; then
-    if [ $# -gt 0 ]; then
-      # Quote the arg for re-parsing inside `zsh -ic`.
-      local arg_q
-      arg_q="${(q)1}"
-      zellij run --floating --name danix-add -- zsh -ic "_danix_add_run $arg_q"
-    else
-      zellij run --floating --name danix-add -- zsh -ic _danix_add_run
-    fi
-  else
-    _danix_add_run "$@"
-  fi
-}
-
-# Worker for the `danix-ask` function. Drives a Pi session that answers
-# questions about this flake (what's installed, what keybindings exist,
-# etc.) read-only. No clean-tree check — the agent doesn't edit anything.
-_danix_ask_run() {
+# danix-ask — read-only Pi session that answers questions about this
+# flake (what's installed, what keybindings exist, etc.). No clean-tree
+# check; the agent doesn't edit anything.
+danix-ask() {
   local op_account repo_path question
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
@@ -180,7 +199,6 @@ _danix_ask_run() {
     echo "danix-ask: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
     return 1
   fi
-  cd "$repo_path" || return 1
   if [ $# -gt 0 ]; then
     question="$1"
   else
@@ -189,32 +207,13 @@ _danix_ask_run() {
     printf "> "
     IFS= read -r question || question=""
   fi
-  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
-    pi --thinking medium \
-       --append-system-prompt ~/.config/dave_nix/danix-ask-prompt.md \
-       ${question:+"$question"}
+  _danix_launch_pi danix-ask "$repo_path" "$op_account" \
+    ~/.config/dave_nix/danix-ask-prompt.md "$question"
 }
 
-# Front-end for `_danix_ask_run`.
-danix-ask() {
-  if [ -n "$ZELLIJ" ]; then
-    if [ $# -gt 0 ]; then
-      local arg_q
-      arg_q="${(q)1}"
-      zellij run --floating --name danix-ask -- zsh -ic "_danix_ask_run $arg_q"
-    else
-      zellij run --floating --name danix-ask -- zsh -ic _danix_ask_run
-    fi
-  else
-    _danix_ask_run "$@"
-  fi
-}
-
-# Worker for the `danix-vim` function. Drives a Pi session that makes a
-# focused change to the neovim (davim) config under ./davim/ in this
-# repo, dry-runs a build, and commits on success. Same shape as
-# `_danix_add_run` but scoped to the davim subtree.
-_danix_vim_run() {
+# danix-vim — agentically make a focused change to the neovim (davim)
+# config under ./davim/. Same shape as danix-add but scoped to davim.
+danix-vim() {
   local op_account repo_path request
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
@@ -222,13 +221,7 @@ _danix_vim_run() {
     echo "danix-vim: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
     return 1
   fi
-  cd "$repo_path" || return 1
-  if [ -n "$(git status --porcelain)" ]; then
-    echo "danix-vim: working tree at $repo_path is dirty." >&2
-    echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
-    git -c color.status=always status --short >&2
-    return 1
-  fi
+  _danix_require_clean_tree danix-vim "$repo_path" || return 1
   if [ $# -gt 0 ]; then
     request="$1"
   else
@@ -237,34 +230,14 @@ _danix_vim_run() {
     printf "> "
     IFS= read -r request || request=""
   fi
-  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
-    pi --thinking medium \
-       --append-system-prompt ~/.config/dave_nix/danix-vim-prompt.md \
-       ${request:+"$request"}
+  _danix_launch_pi danix-vim "$repo_path" "$op_account" \
+    ~/.config/dave_nix/danix-vim-prompt.md "$request"
 }
 
-# Front-end for `_danix_vim_run`.
-danix-vim() {
-  if [ -n "$ZELLIJ" ]; then
-    if [ $# -gt 0 ]; then
-      local arg_q
-      arg_q="${(q)1}"
-      zellij run --floating --name danix-vim -- zsh -ic "_danix_vim_run $arg_q"
-    else
-      zellij run --floating --name danix-vim -- zsh -ic _danix_vim_run
-    fi
-  else
-    _danix_vim_run "$@"
-  fi
-}
-
-# Worker for the `danix-pi` function. Drives a Pi session that adds or
-# tweaks a Pi addon in this flake: a skill (dotfiles/pi/skills/<name>/),
-# a prompt template (dotfiles/pi/prompts/<name>.md), or general Pi
-# config (piSettings in modules/home-manager/pi.nix). Designs the
-# change with the user, writes files, git-adds, dry-run builds,
-# commits. The user runs `danix-switch` themselves.
-_danix_pi_run() {
+# danix-pi — agentically add or tweak a Pi addon (skill, prompt template,
+# or general piSettings in modules/home-manager/pi.nix). Refuses to start
+# on a dirty tree.
+danix-pi() {
   local op_account repo_path request
   op_account="$(cat ~/.config/dave_nix/op-account 2>/dev/null)"
   repo_path="$(cat ~/.config/dave_nix/repo-path 2>/dev/null)"
@@ -272,13 +245,7 @@ _danix_pi_run() {
     echo "danix-pi: ~/.config/dave_nix/repo-path is missing — run danix-switch once first." >&2
     return 1
   fi
-  cd "$repo_path" || return 1
-  if [ -n "$(git status --porcelain)" ]; then
-    echo "danix-pi: working tree at $repo_path is dirty." >&2
-    echo "Commit, stash, or discard pending changes first so the agent's commit stays focused." >&2
-    git -c color.status=always status --short >&2
-    return 1
-  fi
+  _danix_require_clean_tree danix-pi "$repo_path" || return 1
   if [ $# -gt 0 ]; then
     request="$1"
   else
@@ -287,25 +254,8 @@ _danix_pi_run() {
     printf "> "
     IFS= read -r request || request=""
   fi
-  op run --account="$op_account" --env-file ~/.secrets.template --no-masking -- \
-    pi --thinking medium \
-       --append-system-prompt ~/.config/dave_nix/danix-pi-prompt.md \
-       ${request:+"$request"}
-}
-
-# Front-end for `_danix_pi_run`.
-danix-pi() {
-  if [ -n "$ZELLIJ" ]; then
-    if [ $# -gt 0 ]; then
-      local arg_q
-      arg_q="${(q)1}"
-      zellij run --floating --name danix-pi -- zsh -ic "_danix_pi_run $arg_q"
-    else
-      zellij run --floating --name danix-pi -- zsh -ic _danix_pi_run
-    fi
-  else
-    _danix_pi_run "$@"
-  fi
+  _danix_launch_pi danix-pi "$repo_path" "$op_account" \
+    ~/.config/dave_nix/danix-pi-prompt.md "$request"
 }
 
 # ---------------------------------------------------------------------------
