@@ -18,6 +18,9 @@ TMUX MODE  (Ctrl-b then …)
   Pane focus
     h j k l   move focus  left / down / up / right
 
+  Pane move (swap focused pane in direction)
+    H J K L   move pane   left / down / up / right
+
   Pane management
     x         close focused pane (kills its process)
     z         toggle fullscreen for focused pane
