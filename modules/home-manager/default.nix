@@ -358,7 +358,7 @@
     kitty = {
       enable = true;
       font.name = "MesloLGS Nerd Font Mono";
-      font.size = 16;
+      font.size = 12;
       settings = {
         shell = "${pkgs.zsh}/bin/zsh";
       };
