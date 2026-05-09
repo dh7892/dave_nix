@@ -24,6 +24,11 @@ copy_on_select true
 scrollback_editor "nvim"
 pane_frames false
 session_serialization false
+// Pass kitty's CSI-u ("kitty keyboard protocol") sequences through to inner
+// programs instead of zellij swallowing them. Without this, fresh zellij
+// sessions inside kitty can mangle input (Shift-Enter, modified keys) until
+// the session is restarted. See karabiner-cleanup-tasks.md follow-up note.
+support_kitty_keyboard_protocol true
 
 // Theme
 theme "default"

@@ -44,6 +44,12 @@
     enable = true;
     caskArgs.no_quarantine = true;
     global.brewfile = true;
+    # Keep brew-managed casks/brews up to date on every `danix-switch`.
+    # Without this, nix-darwin only ensures they're installed, never upgraded,
+    # which means casks like karabiner-elements drift behind upstream until
+    # bumped by hand. Trade-off: rebuilds are slightly slower and any cask
+    # can move under us on rebuild — acceptable for our small cask list.
+    onActivation.upgrade = true;
     brews = [];
     casks = ["1password-cli" "cmux" "karabiner-elements"];
     taps = ["manaflow-ai/cmux"];
