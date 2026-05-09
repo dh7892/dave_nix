@@ -30,11 +30,11 @@
       # update-source: github-release anomalyco/opencode (asset: opencode-darwin-arm64.zip)
       opencode-pkg = pkgs.stdenv.mkDerivation rec {
         pname = "opencode";
-        version = "1.14.38";
+        version = "1.14.41";
 
         src = pkgs.fetchurl {
           url = "https://github.com/anomalyco/opencode/releases/download/v${version}/opencode-darwin-arm64.zip";
-          sha256 = "0p0ykc10xyqx1b76s64s5sfmkzlzh5ap3135b50wk9v0y2g3v6jl";
+          sha256 = "1lpynsifkry1x3va5dbvd99wl9i3z7iqmivyncw6by8w7xd0lmkr";
         };
 
         nativeBuildInputs = [ pkgs.unzip ];
@@ -59,11 +59,11 @@
       # update-source: github-release badlogic/pi-mono (asset: pi-darwin-arm64.tar.gz)
       pi-pkg = pkgs.stdenv.mkDerivation rec {
         pname = "pi-coding-agent";
-        version = "0.73.0";
+        version = "0.74.0";
 
         src = pkgs.fetchurl {
           url = "https://github.com/badlogic/pi-mono/releases/download/v${version}/pi-darwin-arm64.tar.gz";
-          sha256 = "0c1d1mw7gbk0n58xlhgwahrfakhqf42lqj6kwsx5dgyf7pww630v";
+          sha256 = "042yn7c7fk7i87fiwrp6gxpk292h05bhq90j8diqbaf64fc1fqrh";
         };
 
         unpackPhase = ''
