@@ -23,7 +23,23 @@ let
   # Skeleton (TASK-000): intentionally empty. Subsequent tasks add
   # `packages`, `theme`, `defaultProvider`, etc. as needed.
   # ----------------------------------------------------------------
-  piSettings = { };
+  # Declarative pi-package list. `pi` resolves these on startup and
+  # installs anything missing (npm:* via `npm install -g`, git:*
+  # via clone under ~/.pi/agent/git/...). Don't `pi install` by
+  # hand — add the spec here and run `danix-switch`.
+  #
+  # Note: any npm package added here is loaded by the Node on PATH,
+  # which is pinned to `nodejs_22` in default.nix's myPackages.
+  # Several Pi-ecosystem packages require Node ≥ 20, so don't drop
+  # that dependency without a replacement.
+  #
+  # Parked: `npm:whatsapp-pi` (TASK-008) — worked but was the wrong
+  # shape for "drive Pi from phone" (self-message gap, Baileys ToS).
+  # If we revisit the mobile-reach-out story, `npm:@llblab/pi-telegram`
+  # is the better-fitting candidate.
+  piSettings = {
+    packages = [ ];
+  };
 
   settingsJson = builtins.toJSON piSettings;
 

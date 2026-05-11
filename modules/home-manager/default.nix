@@ -222,6 +222,12 @@
         # dotfiles/pi/extensions/voice.ts.
         whisper-cpp
         sox
+        # Node.js for Pi packages installed from npm (e.g. whatsapp-pi,
+        # TASK-008). Pinned to current LTS — several Pi-ecosystem
+        # packages require Node ≥ 20. This must come from Nix so it
+        # shadows any stale /usr/local/bin/node left over from old
+        # nodejs.org installers.
+        nodejs_22
       ]);
     in
     {
