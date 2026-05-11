@@ -9,8 +9,24 @@ function yy() {
 	rm -f -- "$tmp"
 }
 
-# Auto-attach to Zellij (skip in VS Code, cmux, or if already inside a multiplexer)
-if [[ -z "$TMUX" && -z "$ZELLIJ" && -z "$VSCODE_PID" && -z "$CMUX_WORKSPACE_ID" ]]; then
+# Auto-attach to Zellij ONLY inside kitty (our daily-driver terminal).
+#
+# Deliberately opt-in rather than opt-out: Terminal.app, iTerm, etc. stay
+# as a vanilla zsh so we always have a rescue shell when zellij or its
+# config is broken.
+#
+# Guards (all required):
+#   `-o interactive`  -- this is an interactive shell
+#   `-t 1`            -- stdout is a real tty
+#   $KITTY_WINDOW_ID  -- we're actually inside a kitty window
+# The interactive/tty pair is load-bearing: at boot some launchd-spawned
+# process sources this zshrc in a non-tty context (TERM unset). Without
+# those guards a poisoned tty-less `default` zellij session was created
+# ~30s after boot, and every terminal opened later attached to it and
+# saw gibberish input.
+if [[ -o interactive ]] && [[ -t 1 ]] && \
+   [[ -n "$KITTY_WINDOW_ID" ]] && \
+   [[ -z "$TMUX" && -z "$ZELLIJ" && -z "$VSCODE_PID" && -z "$CMUX_WORKSPACE_ID" ]]; then
   zellij attach default || zellij -s default
 fi
 
