@@ -236,7 +236,7 @@
   ];
   home = {
     stateVersion = "25.05";
-      packages = myPackages ++ [myDavim opencode-pkg claudeCodePkg obsidiblePkg pi-pkg mcporter-pkg];
+      packages = myPackages ++ [myDavim opencode-pkg obsidiblePkg pi-pkg mcporter-pkg];
     sessionVariables = {
       PAGER = "less";
       EDITOR = "nvim";
